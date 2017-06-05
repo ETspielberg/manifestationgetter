@@ -1,12 +1,12 @@
-package unidue.ub.services.manifestgetter;
+package unidue.ub.services.getter;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ManifestGetterApplication {
+public class GetterApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ManifestGetterApplication.class, args);
+		SpringApplication.run(GetterApplication.class, args);
 	}
 }
