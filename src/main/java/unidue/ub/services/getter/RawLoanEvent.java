@@ -1,6 +1,6 @@
 package unidue.ub.services.getter;
 
-public class RawEvent {
+public class RawLoanEvent {
 	
 	private String recKey;
 	
@@ -14,16 +14,35 @@ public class RawEvent {
 	
 	private String loanHour;
 	
-	public RawEvent() {
+	private String returnDate;
+	
+	private String returnHour;
+	
+	private String materials;
+	
+	public RawLoanEvent() {
 	}
 	
-	public RawEvent(String recKey, String subLibrary, String borrowerStatus, String loanDate, String loanHour) {
+	public RawLoanEvent(String recKey, String subLibrary, String borrowerStatus, String material, String loanDate, String loanHour) {
 		this.recKey = recKey;
 		this.subLibrary = subLibrary;
 		this.borrowerStatus = borrowerStatus;
 		this.loanDate = loanDate;
 		this.loanHour = loanHour;
 		this.itemSequence = Integer.parseInt(recKey.substring(9));
+		this.returnDate = "";
+		this.returnHour = "";
+	}
+	
+	public RawLoanEvent(String recKey, String subLibrary, String borrowerStatus, String material, String loanDate, String loanHour, String returnDate, String returnHour) {
+		this.recKey = recKey;
+		this.subLibrary = subLibrary;
+		this.borrowerStatus = borrowerStatus;
+		this.loanDate = loanDate;
+		this.loanHour = loanHour;
+		this.itemSequence = Integer.parseInt(recKey.substring(9));
+		this.returnDate = returnDate;
+		this.returnHour = returnHour;
 	}
 	
 	/**
@@ -138,8 +157,20 @@ public class RawEvent {
 		this.returnHour = returnHour;
 	}
 
-	private String returnDate;
+	/**
+	 * @return the materials
+	 */
+	public String getMaterials() {
+		return materials;
+	}
+
+	/**
+	 * @param materials the materials to set
+	 */
+	public void setMaterials(String materials) {
+		this.materials = materials;
+	}
+
 	
-	private String returnHour;
 
 }
