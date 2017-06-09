@@ -1,7 +1,9 @@
 package unidue.ub.services.getter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,12 +85,68 @@ public class GetterController {
 		return ResponseEntity.ok(events);
 	}
 
+	private Set<String> shelfmarks = new HashSet<String>();
+
+	private boolean shelfmarkAdded = true;
+
+	private Set<Manifestation> documents = new HashSet<Manifestation>();
+
 	@RequestMapping("/fullManifestation")
 	public ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
-			@RequestParam("collection") String collection, @RequestParam("material") String material) {
+			@RequestParam("collection") String collection, @RequestParam("material") String material,
+			@RequestParam("exact") String exact) {
+
+		
+		Boolean exactBoolean = "true".equals(exact);
+		addShelfmarkIfNew(identifier.trim(),exactBoolean);
+		ItemFilter itemFilter = new ItemFilter(collection, material);
+		
+		ManifestationGetter manifestationgetter = new ManifestationGetter(jdbcTemplate);
 		ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
-		Manifestation manifestation = new Manifestation(identifier);
-		List<Item> items = itemGetter.getItemsByDocNumber(identifier);
-		return ResponseEntity.ok(manifestation);
+		EventGetter eventgetter = new EventGetter(jdbcTemplate, itemFilter);
+		List<Manifestation> manifestations = new ArrayList<>();
+		
+		do {
+			for (String shelfmark : shelfmarks) {
+				manifestations.addAll(manifestationgetter.getDocumentsByShelfmark(shelfmark, exactBoolean));
+				for (Manifestation manifestation : manifestations) {
+
+					List<Item> items = itemGetter.getItemsByDocNumber(manifestation.getDocNumber());
+
+			for (Item item : items)
+				if (itemFilter.matches(item))
+					manifestation.addItem(item);
+			
+			eventgetter.addEventsToManifestation(manifestation);
+		}
+				shelfmarkAdded = false;
+
+				for (Manifestation document : documents) {
+					for (String callNo : document.getCallNo().split(","))
+						addShelfmarkIfNew(callNo,exactBoolean);
+					for (Item item : document.getItems())
+						addShelfmarkIfNew(item.getCallNo(),exactBoolean);
+				}
+			}
+		} while (shelfmarkAdded);
+		return ResponseEntity.ok(manifestations);
+	}
+	
+	private void addShelfmarkIfNew(String shelfmark, boolean exact) {
+		shelfmark = shelfmark.trim();
+		shelfmark = shelfmark.replaceAll("\\+\\d+", "");
+
+		if ("???".equals(shelfmark))
+			return;
+
+		if (!exact)
+			shelfmark = shelfmark.replaceAll("\\(\\d+\\)", "");
+
+		if (shelfmarks.contains(shelfmark))
+			return;
+
+		LOGGER.debug("added shelfmark " + shelfmark);
+		shelfmarks.add(shelfmark);
+		shelfmarkAdded = true;
 	}
 }

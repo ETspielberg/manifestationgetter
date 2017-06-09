@@ -102,7 +102,7 @@ public class EventGetter {
 		return events;
 	}
 
-	public Manifestation addEventsToManifestation(Manifestation manifestation) {
+	public void addEventsToManifestation(Manifestation manifestation) {
 		// prepare all raw events
 		List<RawLoanEvent> rawClosedLoanEvents = new ArrayList<>();
 		List<RawLoanEvent> rawOpenLoanEvents = new ArrayList<>();
@@ -194,7 +194,5 @@ public class EventGetter {
 				requestEvent.setItem(item);
 			}
 		}
-
-		return manifestation;
 	}
 }
