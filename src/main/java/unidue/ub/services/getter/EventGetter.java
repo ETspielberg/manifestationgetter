@@ -27,28 +27,30 @@ public class EventGetter {
 
 	private final String getOpenRequests = "select z37_rec_key, z37_open_date, z37_open_hour, z37_pickup_location from edu50.z37 where z37_rec_key like ? and z37_open_date > '20000000' order by z37_open_date, z37_open_hour, z37_rec_key";
 
+	private final String getAllOpenRequests = "select z37_rec_key, z37_open_date, z37_open_hour, z37_pickup_location from edu50.z37";
+	
 	public EventGetter(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.itemFilter = new ItemFilter("", "");
-		this.eventFilter = new EventFilter("");
+		this.setEventFilter(new EventFilter(""));
 	}
 
 	public EventGetter(JdbcTemplate jdbcTemplate, ItemFilter itemFilter) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.itemFilter = itemFilter;
-		this.eventFilter = new EventFilter("");
+		this.setEventFilter(new EventFilter(""));
 	}
 
 	public EventGetter(JdbcTemplate jdbcTemplate, EventFilter eventFilter) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.itemFilter = new ItemFilter("", "");
-		this.eventFilter = eventFilter;
+		this.setEventFilter(eventFilter);
 	}
 
 	public EventGetter(JdbcTemplate jdbcTemplate, ItemFilter itemFilter, EventFilter eventFilter) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.itemFilter = itemFilter;
-		this.eventFilter = eventFilter;
+		this.setEventFilter(eventFilter);
 	}
 
 	public List<Event> getLoansByDocNumber(String identifier) {
@@ -68,10 +70,10 @@ public class EventGetter {
 					"return", rawLoanEvent.getBorrowerStatus(), counter--));
 		}
 		rawOpenLoanEvents.addAll(jdbcTemplate.query(getOpenLoans, new Object[] { identifier + "%" },
-				(rs, rowNum) -> new RawLoanEvent(rs.getString("z36h_rec_key"), rs.getString("z36h_sub_library"),
-						rs.getString("z36h_bor_status"), rs.getString("z36h_material"), rs.getString("z36h_loan_date"),
-						rs.getString("z36h_loan_hour"), rs.getString("z36h_returned_date"),
-						rs.getString("z36h_returned_hour"))));
+				(rs, rowNum) -> new RawLoanEvent(rs.getString("z36_rec_key"), rs.getString("z36_sub_library"),
+						rs.getString("z36_bor_status"), rs.getString("z36_material"), rs.getString("z36_loan_date"),
+						rs.getString("z36_loan_hour"), "",
+						"")));
 		for (RawLoanEvent rawLoanEvent : rawOpenLoanEvents)
 			events.add(new Event(rawLoanEvent.getRecKey(), rawLoanEvent.getLoanDate(), rawLoanEvent.getLoanHour(),
 					"loan", rawLoanEvent.getBorrowerStatus(), counter++));
@@ -87,7 +89,7 @@ public class EventGetter {
 						rs.getString("z37h_pickup_location"))));
 		rawOpenRequestEvents.addAll(jdbcTemplate.query(getOpenRequests, new Object[] { identifier + "%" },
 				(rs, rowNum) -> new RawRequestEvent(rs.getString("z37_rec_key"), rs.getString("z37_open_date"),
-						rs.getString("z37_open_hour"), rs.getString("z37_pick_up_location"))));
+						rs.getString("z37_open_hour"), rs.getString("z37_pickup_location"))));
 		List<Event> events = new ArrayList<>();
 		for (RawRequestEvent rawRequestEvent : rawClosedRequestEvents) {
 			events.add(new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getOpenDate(),
@@ -95,6 +97,19 @@ public class EventGetter {
 			events.add(new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getHoldDate(),
 					rawRequestEvent.getOpenHour(), "hold", "", counter--));
 		}
+		for (RawRequestEvent rawRequestEvent : rawOpenRequestEvents) {
+			events.add(new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getOpenDate(),
+					rawRequestEvent.getOpenHour(), "request", "", counter++));
+		}
+		return events;
+	}
+	
+	public List<Event> getOpenRequests() {
+		List<RawRequestEvent> rawOpenRequestEvents = new ArrayList<>();
+		rawOpenRequestEvents.addAll(jdbcTemplate.query(getAllOpenRequests,
+				(rs, rowNum) -> new RawRequestEvent(rs.getString("z37_rec_key"), rs.getString("z37_open_date"),
+						rs.getString("z37_open_hour"), rs.getString("z37_pickup_location"))));
+		List<Event> events = new ArrayList<>();
 		for (RawRequestEvent rawRequestEvent : rawOpenRequestEvents) {
 			events.add(new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getOpenDate(),
 					rawRequestEvent.getOpenHour(), "request", "", counter++));
@@ -117,10 +132,10 @@ public class EventGetter {
 								rs.getString("z36h_loan_date"), rs.getString("z36h_loan_hour"),
 								rs.getString("z36h_returned_date"), rs.getString("z36h_returned_hour"))));
 		rawOpenLoanEvents.addAll(jdbcTemplate.query(getOpenLoans, new Object[] { manifestation.getDocNumber() + "%" },
-				(rs, rowNum) -> new RawLoanEvent(rs.getString("z36h_rec_key"), rs.getString("z36h_sub_library"),
-						rs.getString("z36h_bor_status"), rs.getString("z36h_material"), rs.getString("z36h_loan_date"),
-						rs.getString("z36h_loan_hour"), rs.getString("z36h_returned_date"),
-						rs.getString("z36h_returned_hour"))));
+				(rs, rowNum) -> new RawLoanEvent(rs.getString("z36_rec_key"), rs.getString("z36_sub_library"),
+						rs.getString("z36_bor_status"), rs.getString("z36_material"), rs.getString("z36_loan_date"),
+						rs.getString("z36_loan_hour"), "",
+						"")));
 		rawClosedRequestEvents
 				.addAll(jdbcTemplate.query(getClosedRequests, new Object[] { manifestation.getDocNumber() + "%" },
 						(rs, rowNum) -> new RawRequestEvent(rs.getString("z37h_rec_key"),
@@ -140,7 +155,6 @@ public class EventGetter {
 				manifestation.addItem(item);
 			}
 			if (itemFilter.matches(item)) {
-				manifestation.addItem(item);
 				Event loanEvent = new Event(rawLoanEvent.getRecKey(), rawLoanEvent.getLoanDate(),
 						rawLoanEvent.getLoanHour(), "loan", rawLoanEvent.getBorrowerStatus(), counter++);
 				loanEvent.setItem(item);
@@ -194,5 +208,19 @@ public class EventGetter {
 				requestEvent.setItem(item);
 			}
 		}
+	}
+
+	/**
+	 * @return the eventFilter
+	 */
+	public EventFilter getEventFilter() {
+		return eventFilter;
+	}
+
+	/**
+	 * @param eventFilter the eventFilter to set
+	 */
+	public void setEventFilter(EventFilter eventFilter) {
+		this.eventFilter = eventFilter;
 	}
 }

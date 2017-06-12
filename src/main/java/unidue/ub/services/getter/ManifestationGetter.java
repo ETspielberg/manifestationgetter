@@ -35,8 +35,11 @@ public class ManifestationGetter {
 			suffix = SUB_D;
 		}
 		identifier = identifier.toUpperCase();
-		String query = exact ? (select + like + orderBy + suffix) : (select + like + like + like + orderBy + suffix);
-		manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
+		String query = exact ? (select + like + orderBy) : (select + like + like + like + orderBy);
+		if (exact) 
+			manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier + suffix,identifier + "+%" + suffix},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
+		else
+			manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier + suffix,identifier + "+%" + suffix,identifier + "-%" + suffix,identifier + "(%" + suffix},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
 		return manifestations;
 	}
 	

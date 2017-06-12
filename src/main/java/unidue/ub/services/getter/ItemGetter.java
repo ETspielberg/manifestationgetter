@@ -37,7 +37,7 @@ public class ItemGetter {
 				rs.getString("z30_price")
 				)));
 		items.addAll(jdbcTemplate.query(getDeletedItems, new Object[]{identifier + "%"},(rs, rowNum) -> 
-		new Item(rs.getString("z30_rec_key"),
+		new Item(rs.getString("z30h_rec_key"),
 				rs.getString("z30h_collection"), 
 				rs.getString("z30h_call_no"), 
 				rs.getString("z30h_sub_library"),
