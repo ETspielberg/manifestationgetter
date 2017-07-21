@@ -2,11 +2,9 @@ package unidue.ub.services.getter;
 
 public class RawLoanEvent {
 	
-	private String recKey;
+	private String itemId;
 	
 	private String subLibrary;
-	
-	private int itemSequence;
 	
 	private String borrowerStatus;
 	
@@ -23,24 +21,22 @@ public class RawLoanEvent {
 	public RawLoanEvent() {
 	}
 	
-	public RawLoanEvent(String recKey, String subLibrary, String borrowerStatus, String material, String loanDate, String loanHour) {
-		this.recKey = recKey;
+	public RawLoanEvent(String itemId, String subLibrary, String borrowerStatus, String material, String loanDate, String loanHour) {
+		this.itemId = (itemId.length() > 15) ? itemId.substring(0,15) : itemId;
 		this.subLibrary = subLibrary;
 		this.borrowerStatus = borrowerStatus;
 		this.loanDate = loanDate;
 		this.loanHour = loanHour;
-		this.itemSequence = Integer.parseInt(recKey.substring(9));
 		this.returnDate = "";
 		this.returnHour = "";
 	}
 	
-	public RawLoanEvent(String recKey, String subLibrary, String borrowerStatus, String material, String loanDate, String loanHour, String returnDate, String returnHour) {
-		this.recKey = recKey;
+	public RawLoanEvent(String itemId, String subLibrary, String borrowerStatus, String material, String loanDate, String loanHour, String returnDate, String returnHour) {
+		this.itemId = (itemId.length() > 15) ? itemId.substring(0,15) : itemId;
 		this.subLibrary = subLibrary;
 		this.borrowerStatus = borrowerStatus;
 		this.loanDate = loanDate;
 		this.loanHour = loanHour;
-		this.itemSequence = Integer.parseInt(recKey.substring(9));
 		this.returnDate = returnDate;
 		this.returnHour = returnHour;
 	}
@@ -48,8 +44,8 @@ public class RawLoanEvent {
 	/**
 	 * @return the recKey
 	 */
-	public String getRecKey() {
-		return recKey;
+	public String getItemId() {
+		return itemId;
 	}
 
 	/**
@@ -57,13 +53,6 @@ public class RawLoanEvent {
 	 */
 	public String getSubLibrary() {
 		return subLibrary;
-	}
-
-	/**
-	 * @return the itemSequence
-	 */
-	public int getItemSequence() {
-		return itemSequence;
 	}
 
 	/**
@@ -102,10 +91,10 @@ public class RawLoanEvent {
 	}
 
 	/**
-	 * @param recKey the recKey to set
+	 * @param itemId the recKey to set
 	 */
-	public void setRecKey(String recKey) {
-		this.recKey = recKey;
+	public void setItemId(String itemId) {
+		this.itemId = itemId;
 	}
 
 	/**
@@ -113,13 +102,6 @@ public class RawLoanEvent {
 	 */
 	public void setSubLibrary(String subLibrary) {
 		this.subLibrary = subLibrary;
-	}
-
-	/**
-	 * @param itemSequence the itemSequence to set
-	 */
-	public void setItemSequence(int itemSequence) {
-		this.itemSequence = itemSequence;
 	}
 
 	/**

@@ -64,10 +64,13 @@ public class EventGetter {
 						rs.getString("z36h_returned_hour"))));
 
 		for (RawLoanEvent rawLoanEvent : rawClosedLoanEvents) {
-			events.add(new Event(rawLoanEvent.getRecKey(), rawLoanEvent.getLoanDate(), rawLoanEvent.getLoanHour(),
-					"loan", rawLoanEvent.getBorrowerStatus(), counter++));
-			events.add(new Event(rawLoanEvent.getRecKey(), rawLoanEvent.getLoanDate(), rawLoanEvent.getLoanHour(),
-					"return", rawLoanEvent.getBorrowerStatus(), counter--));
+			Event loanEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(), rawLoanEvent.getLoanHour(),
+					"loan", rawLoanEvent.getBorrowerStatus(), counter++);
+			Event returnEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(), rawLoanEvent.getLoanHour(),
+					"return", rawLoanEvent.getBorrowerStatus(), counter--);
+			loanEvent.setEndEvent(returnEvent);
+			events.add(loanEvent);
+			events.add(returnEvent);
 		}
 		rawOpenLoanEvents.addAll(jdbcTemplate.query(getOpenLoans, new Object[] { identifier + "%" },
 				(rs, rowNum) -> new RawLoanEvent(rs.getString("z36_rec_key"), rs.getString("z36_sub_library"),
@@ -75,7 +78,7 @@ public class EventGetter {
 						rs.getString("z36_loan_hour"), "",
 						"")));
 		for (RawLoanEvent rawLoanEvent : rawOpenLoanEvents)
-			events.add(new Event(rawLoanEvent.getRecKey(), rawLoanEvent.getLoanDate(), rawLoanEvent.getLoanHour(),
+			events.add(new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(), rawLoanEvent.getLoanHour(),
 					"loan", rawLoanEvent.getBorrowerStatus(), counter++));
 		return events;
 	}
@@ -92,13 +95,16 @@ public class EventGetter {
 						rs.getString("z37_open_hour"), rs.getString("z37_pickup_location"))));
 		List<Event> events = new ArrayList<>();
 		for (RawRequestEvent rawRequestEvent : rawClosedRequestEvents) {
-			events.add(new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getOpenDate(),
-					rawRequestEvent.getOpenHour(), "request", "", counter++));
-			events.add(new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getHoldDate(),
-					rawRequestEvent.getOpenHour(), "hold", "", counter--));
+			Event requestEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getOpenDate(),
+					rawRequestEvent.getOpenHour(), "request", "", counter++);
+			Event holdEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getHoldDate(),
+					rawRequestEvent.getOpenHour(), "hold", "", counter--);
+			requestEvent.setEndEvent(holdEvent);
+			events.add(requestEvent);
+			events.add(holdEvent);
 		}
 		for (RawRequestEvent rawRequestEvent : rawOpenRequestEvents) {
-			events.add(new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getOpenDate(),
+			events.add(new Event(rawRequestEvent.getItemId(), rawRequestEvent.getOpenDate(),
 					rawRequestEvent.getOpenHour(), "request", "", counter++));
 		}
 		return events;
@@ -111,7 +117,7 @@ public class EventGetter {
 						rs.getString("z37_open_hour"), rs.getString("z37_pickup_location"))));
 		List<Event> events = new ArrayList<>();
 		for (RawRequestEvent rawRequestEvent : rawOpenRequestEvents) {
-			events.add(new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getOpenDate(),
+			events.add(new Event(rawRequestEvent.getItemId(), rawRequestEvent.getOpenDate(),
 					rawRequestEvent.getOpenHour(), "request", "", counter++));
 		}
 		return events;
@@ -126,83 +132,85 @@ public class EventGetter {
 
 		// collect all raw events
 		rawClosedLoanEvents
-				.addAll(jdbcTemplate.query(getClosedLoans, new Object[] { manifestation.getDocNumber() + "%" },
+				.addAll(jdbcTemplate.query(getClosedLoans, new Object[] { manifestation.getTitleID() + "%" },
 						(rs, rowNum) -> new RawLoanEvent(rs.getString("z36h_rec_key"), rs.getString("z36h_sub_library"),
 								rs.getString("z36h_bor_status"), rs.getString("z36h_material"),
 								rs.getString("z36h_loan_date"), rs.getString("z36h_loan_hour"),
 								rs.getString("z36h_returned_date"), rs.getString("z36h_returned_hour"))));
-		rawOpenLoanEvents.addAll(jdbcTemplate.query(getOpenLoans, new Object[] { manifestation.getDocNumber() + "%" },
+		rawOpenLoanEvents.addAll(jdbcTemplate.query(getOpenLoans, new Object[] { manifestation.getTitleID() + "%" },
 				(rs, rowNum) -> new RawLoanEvent(rs.getString("z36_rec_key"), rs.getString("z36_sub_library"),
 						rs.getString("z36_bor_status"), rs.getString("z36_material"), rs.getString("z36_loan_date"),
 						rs.getString("z36_loan_hour"), "",
 						"")));
 		rawClosedRequestEvents
-				.addAll(jdbcTemplate.query(getClosedRequests, new Object[] { manifestation.getDocNumber() + "%" },
+				.addAll(jdbcTemplate.query(getClosedRequests, new Object[] { manifestation.getTitleID() + "%" },
 						(rs, rowNum) -> new RawRequestEvent(rs.getString("z37h_rec_key"),
 								rs.getString("z37h_open_date"), rs.getString("z37h_open_hour"),
 								rs.getString("z37h_hold_date"), rs.getString("z37h_pickup_location"))));
 		rawOpenRequestEvents
-				.addAll(jdbcTemplate.query(getOpenRequests, new Object[] { manifestation.getDocNumber() + "%" },
+				.addAll(jdbcTemplate.query(getOpenRequests, new Object[] { manifestation.getTitleID() + "%" },
 						(rs, rowNum) -> new RawRequestEvent(rs.getString("z37_rec_key"), rs.getString("z37_open_date"),
 								rs.getString("z37_open_hour"), rs.getString("z37_pick_up_location"))));
 
 		// convert raw events to events, add extra items where necessary, and
 		// connect events to items.
 		for (RawLoanEvent rawLoanEvent : rawClosedLoanEvents) {
-			Item item = manifestation.getItem(rawLoanEvent.getItemSequence());
+			Item item = manifestation.getItem(rawLoanEvent.getItemId());
 			if (item == null) {
-				item = new Item("", rawLoanEvent.getItemSequence(), "", "", "", "");
+				item = new Item("", rawLoanEvent.getItemId(), "", "", "", "");
 				manifestation.addItem(item);
 			}
 			if (itemFilter.matches(item)) {
-				Event loanEvent = new Event(rawLoanEvent.getRecKey(), rawLoanEvent.getLoanDate(),
+				Event loanEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(),
 						rawLoanEvent.getLoanHour(), "loan", rawLoanEvent.getBorrowerStatus(), counter++);
 				loanEvent.setItem(item);
-				item.addEvent(loanEvent);
-				Event returnEvent = new Event(rawLoanEvent.getRecKey(), rawLoanEvent.getLoanDate(),
-						rawLoanEvent.getLoanHour(), "return", rawLoanEvent.getBorrowerStatus(), counter--);
+				Event returnEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getReturnDate(),
+						rawLoanEvent.getReturnHour(), "return", rawLoanEvent.getBorrowerStatus(), counter--);
 				returnEvent.setItem(item);
+				loanEvent.setEndEvent(returnEvent);
+				item.addEvent(loanEvent);
 				item.addEvent(returnEvent);
 			}
 		}
 		for (RawLoanEvent rawLoanEvent : rawOpenLoanEvents) {
-			Item item = manifestation.getItem(rawLoanEvent.getItemSequence());
+			Item item = manifestation.getItem(rawLoanEvent.getItemId());
 			if (item == null) {
-				item = new Item("", rawLoanEvent.getItemSequence(), "", "", "", "");
+				item = new Item("", rawLoanEvent.getItemId(), "", "", "", "");
 				manifestation.addItem(item);
 			}
 			if (itemFilter.matches(item)) {
-				Event loanEvent = new Event(rawLoanEvent.getRecKey(), rawLoanEvent.getLoanDate(),
+				Event loanEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(),
 						rawLoanEvent.getLoanHour(), "loan", rawLoanEvent.getBorrowerStatus(), counter++);
 				loanEvent.setItem(item);
 				item.addEvent(loanEvent);
 			}
 		}
 		for (RawRequestEvent rawRequestEvent : rawClosedRequestEvents) {
-			Item item = manifestation.getItem(rawRequestEvent.getItemSequence());
+			Item item = manifestation.getItem(rawRequestEvent.getItemId());
 			if (item == null) {
-				item = new Item("", rawRequestEvent.getItemSequence(), "", "", "", "");
+				item = new Item("", rawRequestEvent.getItemId(), "", "", "", "");
 				manifestation.addItem(item);
 			}
 			if (itemFilter.matches(item)) {
-				Event requestEvent = new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getOpenDate(),
+				Event requestEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getOpenDate(),
 						rawRequestEvent.getOpenHour(), "request", "", counter++);
-				item.addEvent(requestEvent);
 				requestEvent.setItem(item);
-				Event holdEvent = new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getHoldDate(),
+				Event holdEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getHoldDate(),
 						rawRequestEvent.getOpenHour(), "hold", "", counter--);
 				item.addEvent(holdEvent);
+				requestEvent.setEndEvent(holdEvent);
+				item.addEvent(requestEvent);
 				holdEvent.setItem(item);
 			}
 		}
 		for (RawRequestEvent rawRequestEvent : rawOpenRequestEvents) {
-			Item item = manifestation.getItem(rawRequestEvent.getItemSequence());
+			Item item = manifestation.getItem(rawRequestEvent.getItemId());
 			if (item == null) {
-				item = new Item("", rawRequestEvent.getItemSequence(), "", "", "", "");
+				item = new Item("", rawRequestEvent.getItemId(), "", "", "", "");
 				manifestation.addItem(item);
 			}
 			if (itemFilter.matches(item)) {
-				Event requestEvent = new Event(rawRequestEvent.getRecKey(), rawRequestEvent.getOpenDate(),
+				Event requestEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getOpenDate(),
 						rawRequestEvent.getOpenHour(), "request", "", counter++);
 				item.addEvent(requestEvent);
 				requestEvent.setItem(item);

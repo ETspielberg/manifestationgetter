@@ -9,15 +9,15 @@ import unidue.ub.media.monographs.Manifestation;
 
 public class ManifestationGetter {
 	
-	private final String select = "select distinct substr(z30_rec_key,1,9) as docNumber from edu50.z30 where ( z30_call_no = ?) ";
+	private final String select = "select distinct substr(z30_rec_key,1,9) as titleId from edu50.z30 where ( z30_call_no = ?) ";
 	
 	private final String like = "or ( z30_call_no like ?) ";
 	
-	private final String orderBy = "order by docNumber";
+	private final String orderBy = "order by titleId";
 	
-	private final String getEtat = "select distinct substr(z75_rec_key,1,9) as docNumber from edu50.z601, edu50.z75 where z601_rec_key_2 = z75_rec_key_2 and z601_rec_key like ? and z601_type = 'INV'";
+	private final String getEtat = "select distinct substr(z75_rec_key,1,9) as titleId from edu50.z601, edu50.z75 where z601_rec_key_2 = z75_rec_key_2 and z601_rec_key like ? and z601_type = 'INV'";
 	
-	private final String getByNotation = "select distinct substr(z30_rec_key,1,9) as docNumber from edu50.z30 where ( z30_call_no like ?)";
+	private final String getByNotation = "select distinct substr(z30_rec_key,1,9) as titleId from edu50.z30 where ( z30_call_no like ?)";
 	
 	private JdbcTemplate jdbcTemplate;
 	
@@ -37,12 +37,13 @@ public class ManifestationGetter {
 		identifier = identifier.toUpperCase();
 		String query = exact ? (select + like + orderBy) : (select + like + like + like + orderBy);
 		if (exact) 
-			manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier + suffix,identifier + "+%" + suffix},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
+			manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier + suffix,identifier + "+%" + suffix},(rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
 		else
-			manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier + suffix,identifier + "+%" + suffix,identifier + "-%" + suffix,identifier + "(%" + suffix},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
+			manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier + suffix,identifier + "+%" + suffix,identifier + "-%" + suffix,identifier + "(%" + suffix},(rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
 		return manifestations;
 	}
-	
+
+
 	public List<Manifestation> getDocumentsByEtat(String identifier, boolean exact) {
 		String query = getEtat + orderBy;
 		List<Manifestation> manifestations = new ArrayList<>();

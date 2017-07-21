@@ -2,7 +2,7 @@ package unidue.ub.services.getter;
 
 public class RawRequestEvent {
 	
-	private String recKey;
+	private String itemId;
 	
 	private String openDate;
 	
@@ -12,23 +12,19 @@ public class RawRequestEvent {
 	
 	private String pickUpLocation;
 	
-	private int itemSequence;
-	
 	public RawRequestEvent() {
 	}
 	
-	public RawRequestEvent(String recKey, String openDate, String openHour, String holdDate, String pickUpLocation) {
-		this.recKey = recKey;
-		this.setItemSequence(Integer.parseInt(recKey.substring(9, 15)));
+	public RawRequestEvent(String itemId, String openDate, String openHour, String holdDate, String pickUpLocation) {
+		this.itemId = (itemId.length() > 15) ? itemId.substring(0,15) : itemId;
 		this.openDate = openDate;
 		this.openHour = openHour;
 		this.holdDate = holdDate;
 		this.pickUpLocation = pickUpLocation;
 	}
 	
-	public RawRequestEvent(String recKey, String openDate, String openHour, String pickUpLocation) {
-		this.recKey = recKey;
-		this.setItemSequence(Integer.parseInt(recKey.substring(9, 15)));
+	public RawRequestEvent(String itemId, String openDate, String openHour, String pickUpLocation) {
+		this.itemId = (itemId.length() > 15) ? itemId.substring(0,15) : itemId;
 		this.openDate = openDate;
 		this.openHour = openHour;
 		this.holdDate = "";
@@ -36,10 +32,10 @@ public class RawRequestEvent {
 	}
 
 	/**
-	 * @return the recKey
+	 * @return the itemId
 	 */
-	public String getRecKey() {
-		return recKey;
+	public String getItemId() {
+		return itemId;
 	}
 
 	/**
@@ -71,10 +67,10 @@ public class RawRequestEvent {
 	}
 
 	/**
-	 * @param recKey the recKey to set
+	 * @param itemId the recKey to set
 	 */
-	public void setRecKey(String recKey) {
-		this.recKey = recKey;
+	public void setItemId(String itemId) {
+		this.itemId = itemId;
 	}
 
 	/**
@@ -105,19 +101,4 @@ public class RawRequestEvent {
 		this.pickUpLocation = pickUpLocation;
 	}
 
-	/**
-	 * @return the itemSequence
-	 */
-	public int getItemSequence() {
-		return itemSequence;
-	}
-
-	/**
-	 * @param itemSequence the itemSequence to set
-	 */
-	public void setItemSequence(int itemSequence) {
-		this.itemSequence = itemSequence;
-	}
-	
-	
 }

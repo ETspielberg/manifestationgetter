@@ -2,8 +2,7 @@
 <xsl:stylesheet version="1.0" 
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
   xmlns:mabxml="http://www.ddb.de/professionell/mabxml/mabxml-1.xsd"
-  exclude-result-prefixes="xsl mabxml"
->
+  exclude-result-prefixes="xsl mabxml">
 
   <xsl:template match="mabxml:datensatz">
     <bibliographicInformation>
@@ -20,7 +19,6 @@
   </title>
   <subtitle>
   <xsl:apply-templates select="mabxml:feld[@nr &gt;='335' and @nr &lt;='355']" />
-  
   </subtitle>
   <isbn>
   <xsl:apply-templates select="mabxml:feld[@nr &gt;='540']" />
@@ -59,27 +57,19 @@
   <xsl:template name="kopf">
     <xsl:choose>
       <xsl:when test="mabxml:feld[@nr='100' and @ind=' ']">
-        <b>
           <xsl:apply-templates  select="mabxml:feld[@nr='100']/mabxml:uf[@code='a']|mabxml:feld[@nr='100']/mabxml:uf[@code='p']" />
           <xsl:text>:</xsl:text>
-        </b>
-        <br />
       </xsl:when>
       <xsl:when test="mabxml:feld[@nr='200' and @ind=' ']">
-        <b>
           <xsl:apply-templates select="mabxml:feld[@nr='200']/mabxml:uf[@code='a']|mabxml:feld[@nr='200']/mabxml:uf[@code='p']" />
           <xsl:text>:</xsl:text>
-        </b>
-        <br />
       </xsl:when>
     </xsl:choose>
   </xsl:template>
 
   <!-- Setzt nichtsortierende mabxml:uf-Inhalte kursiv -->
   <xsl:template match="mabxml:ns">
-    <i>
       <xsl:value-of select="text()" />
-    </i>
   </xsl:template>
 
   <!-- Sammlungsvermerk -->
@@ -99,14 +89,12 @@
 
   <!-- Einheitssachtitel -->
   <xsl:template match="mabxml:feld[@nr='304']">
-    <br />
     <xsl:text>Einheitssacht.: </xsl:text>
     <xsl:apply-templates select="mabxml:uf[@code='a']" />
   </xsl:template>
 
   <!-- Ansetzungssachtitel -->
   <xsl:template match="mabxml:feld[@nr='310']">
-  <title>
     <xsl:choose>
       <xsl:when test="(../mabxml:feld[@nr='100' and @ind=' ']) or (../mabxml:feld[@nr='200' and @ind=' '])">
       </xsl:when>
@@ -114,7 +102,6 @@
           <xsl:apply-templates select="mabxml:uf[@code='a']" />
       </xsl:otherwise>
     </xsl:choose>
-    </title>
   </xsl:template>
 
   <!-- Hauptsachtitel -->
@@ -123,14 +110,10 @@
       <xsl:when test="../@typ='h'">
         <xsl:choose>
           <xsl:when test="(../mabxml:feld[@nr='100' and @ind=' ']) or (../mabxml:feld[@nr='200' and @ind=' ']) or (../mabxml:feld[@nr='310'])">
-            <title>
             <xsl:apply-templates select="mabxml:uf[@code='a']" />
-            </title>
           </xsl:when>
           <xsl:otherwise>
-              <title>
               <xsl:apply-templates select="mabxml:uf[@code='a']" />
-              </title>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
@@ -165,9 +148,7 @@
 
   <!-- Zusatz zum Sachtitel -->
   <xsl:template match="mabxml:feld[@nr='335' or @nr='343' or @nr='347' or @nr='412' or @nr='417' or @nr='434']">
-  <title>
     <xsl:apply-templates select="mabxml:uf[@code='a']" />
-  </title>
   </xsl:template>
 
   <!-- Parallelsachtitel in Ansetzungsform -->
@@ -234,7 +215,6 @@
 
   <!-- Verlagsort -->
   <xsl:template match="mabxml:feld[@nr='410']">
-    <br />
     <xsl:apply-templates select="mabxml:uf[@code='a']" />
   </xsl:template>
 
@@ -291,12 +271,10 @@
 
   <!-- Gesamttitel -->
   <xsl:template match="mabxml:feld[@nr='451' or @nr='461' or @nr='471' or @nr='481' or @nr='491']">
-  <title>
     <xsl:choose>
       <xsl:when test="@nr='451'">
         <xsl:choose>
           <xsl:when test="../@typ='h'">
-            <br />
             <xsl:text>(</xsl:text>
           </xsl:when>
           <xsl:when test="../@typ='u'">
@@ -319,14 +297,12 @@
         <xsl:apply-templates select="mabxml:uf[@code='a']" />
       </xsl:otherwise>
     </xsl:choose>
-    </title>
   </xsl:template>
 
   <!-- Fussnoten -->
   <xsl:template match="mabxml:feld[@nr &gt;='501'and @nr &lt;='534']">
     <xsl:choose>
       <xsl:when test="../@typ='h' or position()=1">
-        <br />
       </xsl:when>
       <xsl:otherwise>
         <xsl:call-template name="endpunkt" />
@@ -349,7 +325,6 @@
   <xsl:template match="mabxml:feld[@nr='551']">
     <xsl:choose>
       <xsl:when test="position()=1">
-        <br />
       </xsl:when>
       <xsl:otherwise>
         <xsl:text> - </xsl:text>
@@ -377,7 +352,6 @@
 
   <!-- Reportnummern -->
   <xsl:template match="mabxml:feld[@nr='556']">
-    <br />
     <xsl:choose>
       <xsl:when test="@ind='a'">
         <xsl:text>Reportnr. </xsl:text>
@@ -396,7 +370,6 @@
   <xsl:template match="mabxml:feld[@nr='580']">
     <xsl:choose>
       <xsl:when test="position()=1">
-        <br />
       </xsl:when>
       <xsl:otherwise>
         <xsl:text> - </xsl:text>
@@ -409,7 +382,6 @@
   <xsl:template match="mabxml:feld[@nr &gt;='610' and @nr &lt;='647']">
     <xsl:choose>
       <xsl:when test="@nr='610'">
-        <br />
         <xsl:apply-templates select="mabxml:uf[@code='a']" />
         <xsl:text>: </xsl:text>
       </xsl:when>
@@ -480,7 +452,6 @@
       <xsl:when test="position()=1">
         <xsl:choose>
           <xsl:when test="../@typ='h'">
-            <br />
           </xsl:when>
           <xsl:otherwise>
             <xsl:variable name="anzahlknoten"
@@ -613,7 +584,6 @@
             <xsl:text> - </xsl:text>
           </xsl:when>
           <xsl:otherwise>
-            <br />
           </xsl:otherwise>
         </xsl:choose>
       </xsl:otherwise>
@@ -677,7 +647,6 @@
               mabxml:feld[@nr &gt;='800' and @nr &lt;='829']">
       <xsl:choose>
         <xsl:when test="position()=1">
-          <br />
           <xsl:text>NE: </xsl:text>
         </xsl:when>
         <xsl:when test="(@nr &gt;=805) and (@nr &lt;=829) and (@nr mod 6 = 1)">
@@ -738,7 +707,6 @@
 
   <!-- Bandangabe -->
   <xsl:template match="mabxml:feld[@nr='089']">
-    <br />
     <xsl:for-each select="mabxml:uf">
       <xsl:if test="position() !=1"><xsl:text>, </xsl:text></xsl:if>
       <xsl:apply-templates select="." />

@@ -28,13 +28,20 @@ import unidue.ub.media.monographs.Manifestation;
 @CrossOrigin(origins = "http://localhost")
 public class GetterController {
 
-	@Autowired
+	private final
 	JdbcTemplate jdbcTemplate;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GetterController.class);
 
+	private Set<String> shelfmarks;
+
+	@Autowired
+	public GetterController(JdbcTemplate jdbcTemplate) {
+		this.jdbcTemplate = jdbcTemplate;
+	}
+
 	@RequestMapping("/manifestations")
-	public ResponseEntity<?> get(@RequestParam("identifier") String identifier, @RequestParam("exact") String exact,
+	public ResponseEntity<?> getManifestations(@RequestParam("identifier") String identifier, @RequestParam("exact") String exact,
 			@RequestParam("mode") String mode) {
 
 		ManifestationGetter manifestationgetter = new ManifestationGetter(jdbcTemplate);
@@ -56,18 +63,22 @@ public class GetterController {
 			@RequestParam("mode") String mode) {
 		List<Item> items = new ArrayList<>();
 		ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
-		switch (mode) {
-		case "docNumber":
+		if (mode.equals("docNumber")) {
+			LOGGER.info("retrieving items for docNumber " + identifier);
 			items = itemGetter.getItemsByDocNumber(identifier);
-		case "barcode":
+			LOGGER.info("found " + items.size() + " items");
+		}
 
+		if (mode.equals("barcode")) {
+			LOGGER.info("retrieving items for Barcode " + identifier);
+			items = itemGetter.getItemsByBarcode(identifier);
+			LOGGER.info("found " + items.size() + " items");
 		}
 		return ResponseEntity.ok(items);
 	}
 
 	@RequestMapping("/loans")
-	public ResponseEntity<?> getLoans(@RequestParam("identifier") String identifier,
-			@RequestParam("mode") String mode) {
+	public ResponseEntity<?> getLoans(@RequestParam("identifier") String identifier) {
 		EventGetter eventGetter = new EventGetter(jdbcTemplate);
 		List<Event> events = eventGetter.getLoansByDocNumber(identifier);
 		return ResponseEntity.ok(events);
@@ -89,84 +100,88 @@ public class GetterController {
 
 	@RequestMapping("/allopenrequests")
 	public ResponseEntity<?> getEvents() {
-		List<Event> events = new ArrayList<>();
 		EventGetter eventGetter = new EventGetter(jdbcTemplate);
-		events = eventGetter.getOpenRequests();
+		List<Event> events = eventGetter.getOpenRequests();
 		return ResponseEntity.ok(events);
 	}
 
-	private Set<String> shelfmarks;
 
-	private boolean shelfmarkAdded = true;
-
-	private Set<Manifestation> documents;
-
-	private Set<Integer> itemSequences;
 
 	@RequestMapping("/fullManifestation")
 	public ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
 			@RequestParam("collection") String collection, @RequestParam("material") String material,
 			@RequestParam("exact") String exact) {
 
-		documents = new HashSet<Manifestation>();
-		shelfmarks = new HashSet<String>();
-		itemSequences = new HashSet<>();
+		shelfmarks = new HashSet<>();
+		Set<String> shelfmarksQueried = new HashSet<>();
+		Set<String> itemIds = new HashSet<>();
+		Set<Manifestation> manifestations =  new HashSet<>();
+		Set<String> manifestationsQueried = new HashSet<>();
 
 		Boolean exactBoolean = "true".equals(exact);
-		addShelfmarkIfNew(identifier.trim(), exactBoolean);
+		boolean shelfmarkNew = true;
+		buildReferenceShelfmark(identifier,exactBoolean);
+		shelfmarks.add(identifier);
+
 		ItemFilter itemFilter = new ItemFilter(collection, material);
 
 		ManifestationGetter manifestationgetter = new ManifestationGetter(jdbcTemplate);
 		ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
 		EventGetter eventgetter = new EventGetter(jdbcTemplate, itemFilter);
 		MABGetter mabGetter = new MABGetter(jdbcTemplate);
-		List<Manifestation> manifestations = new ArrayList<>();
+		LOGGER.info(String.valueOf(shelfmarks.size()));
 
 		do {
 			for (String shelfmark : shelfmarks) {
-				manifestations.addAll(manifestationgetter.getDocumentsByShelfmark(shelfmark, exactBoolean));
-				for (Manifestation manifestation : manifestations) {
-					List<Item> items = itemGetter.getItemsByDocNumber(manifestation.getDocNumber());
-					mabGetter.addSimpleMAB(manifestation);
-
+				shelfmarkNew = false;
+				if (shelfmarksQueried.contains(shelfmark))
+					continue;
+				LOGGER.info("collecting shelfmark " + shelfmark);
+				List<Manifestation> foundManifestations = manifestationgetter.getDocumentsByShelfmark(shelfmark, exactBoolean);
+				shelfmarksQueried.add(shelfmark);
+				if (foundManifestations.isEmpty())
+					continue;
+				for (Manifestation foundManifestation : foundManifestations) {
+					if (manifestationsQueried.contains(foundManifestation.getTitleID()))
+						continue;
+					LOGGER.info("building manifestation with title ID " + foundManifestation.getTitleID());
+					List<Item> items = itemGetter.getItemsByDocNumber(foundManifestation.getTitleID());
 					for (Item item : items)
-						if (itemFilter.matches(item) && !itemSequences.contains(item.getItemSequence())) {
-							LOGGER.info("adding item " + item.getItemSequence());
-							manifestation.addItem(item);
-							itemSequences.add(item.getItemSequence());
+						if (!itemIds.contains(item.getItemId())) {
+							foundManifestation.addItem(item);
+							itemIds.add(item.getItemId());
 						}
+					eventgetter.addEventsToManifestation(foundManifestation);
+					manifestations.add(foundManifestation);
 
-					eventgetter.addEventsToManifestation(manifestation);
-				}
-				shelfmarkAdded = false;
-
-				for (Manifestation document : documents) {
-					for (String callNo : document.getCallNo().split(","))
-						addShelfmarkIfNew(callNo, exactBoolean);
-					for (Item item : document.getItems())
-						addShelfmarkIfNew(item.getCallNo(), exactBoolean);
+					for (String callNo : foundManifestation.getShelfmarks()) {
+						buildReferenceShelfmark(callNo, exactBoolean);
+						shelfmarkNew = shelfmarkNew || isShelfmarkNew(callNo);
+						if (shelfmarkNew)
+							shelfmarks.add(callNo);
+					}
+					if (!manifestationsQueried.contains(foundManifestation.getTitleID()))
+						manifestationsQueried.add(foundManifestation.getTitleID());
 				}
 			}
-		} while (shelfmarkAdded);
-		return ResponseEntity.ok(manifestations);
+		} while (shelfmarkNew);
+
+		for (Manifestation manifestation : manifestations) {
+			StockEventsBuilder.buildStockEvents(manifestation);
+			mabGetter.addSimpleMAB(manifestation);
+		}
+		return ResponseEntity.ok(new ArrayList<>(manifestations));
 	}
 
-	private void addShelfmarkIfNew(String shelfmark, boolean exact) {
+	private void buildReferenceShelfmark(String shelfmark, boolean exact) {
 		shelfmark = shelfmark.trim();
 		shelfmark = shelfmark.replaceAll("\\+\\d+", "");
-
-		if ("???".equals(shelfmark))
-			return;
-
 		if (!exact)
 			shelfmark = shelfmark.replaceAll("\\(\\d+\\)", "");
+	}
 
-		if (shelfmarks.contains(shelfmark))
-			return;
-
-		LOGGER.debug("added shelfmark " + shelfmark);
-		shelfmarks.add(shelfmark);
-		shelfmarkAdded = true;
+	private boolean isShelfmarkNew(String shelfmark) {
+		return !shelfmark.equals("???") && !shelfmarks.contains(shelfmark) && !shelfmark.isEmpty();
 	}
 
 	@RequestMapping("/nrequests")
@@ -177,15 +192,14 @@ public class GetterController {
 		ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
 		List<Event> events = eventGetter.getOpenRequests();
 		for (Event event : events) {
-			if (event.getRecKey().length() > 9) {
-				String docNumber = event.getRecKey().substring(0, 9);
-				Integer itemSequence = Integer.parseInt(event.getRecKey().substring(9));
+			if (event.getItemId().length() > 9) {
+				String docNumber = event.getItemId().substring(0, 9);
 				if (!requestedDocuments.containsKey(docNumber)) {
 					Manifestation manifestation = new Manifestation(docNumber);
 					manifestation.addItems(itemGetter.getItemsByDocNumber(docNumber));
-					Item item = manifestation.getItem(itemSequence);
+					Item item = manifestation.getItem(event.getItemId());
 					if (item == null) {
-						item = new Item("", itemSequence, "", "", "", "");
+						item = new Item("", event.getItemId(), "", "", "", "");
 						manifestation.addItem(item);
 					}
 					item.addEvent(event);

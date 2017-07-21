@@ -47,8 +47,8 @@ public class MABGetter {
 	 * uses a given connection to Aleph database to build an instance of the
 	 * <code>MABGetter</code>-object
 	 * 
-	 * @param connection
-	 *            an <code>AlephConnection</code>-object
+	 * @param jdbcTemplate
+	 *            an <code>JdbcTemplate</code>-object
 	 * @exception SQLException
 	 *                exception querying the Aleph database
 	 */
@@ -61,7 +61,7 @@ public class MABGetter {
 	 * retrieves the bibliographic information as MAB-fields for a given
 	 * document from the Aleph database
 	 * 
-	 * @param document
+	 * @param manifestation
 	 *            the document the bibliographics information are retrieved for
 	 * @exception Exception
 	 *                general exception
@@ -72,7 +72,7 @@ public class MABGetter {
 		BibliographicInformation bibliographicInformation = new BibliographicInformation();
 		List<MabBlob> mabBlobs = new ArrayList<>();
 		List<String> recKeys = jdbcTemplate.query(sqlRecKey,
-				new Object[] { "EDU50" + manifestation.getDocNumber() + "%" }, (rs, rowNum) -> rs.getString(1));
+				new Object[] { "EDU50" + manifestation.getTitleID() + "%" }, (rs, rowNum) -> rs.getString(1));
 		for (String recKey : recKeys) {
 			LOGGER.info("retrieving MAB data for record " + recKey);
 			mabBlobs = jdbcTemplate.query(sql, new Object[] { recKey },
@@ -91,7 +91,7 @@ public class MABGetter {
 	 * retrieves the bibliographic information as MAB-fields for a given
 	 * document from the Aleph database
 	 * 
-	 * @param document
+	 * @param manifestation
 	 *            the document the bibliographics information are retrieved for
 	 * @exception Exception
 	 *                general exception
@@ -102,7 +102,7 @@ public class MABGetter {
 		BibliographicInformation bibliographicInformation = new BibliographicInformation();
 		List<MabBlob> mabBlobs = new ArrayList<>();
 		List<String> recKeys = jdbcTemplate.query(sqlRecKey,
-				new Object[] { "EDU50" + manifestation.getDocNumber() + "%" }, (rs, rowNum) -> rs.getString(1));
+				new Object[] { "EDU50" + manifestation.getTitleID() + "%" }, (rs, rowNum) -> rs.getString(1));
 		for (String recKey : recKeys) {
 			mabBlobs = jdbcTemplate.query(sql, new Object[] { recKey },
 					(rs, rowNum) -> new MabBlob(rs.getBytes(1), rs.getInt(2)));
