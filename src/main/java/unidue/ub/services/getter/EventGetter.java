@@ -8,14 +8,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import unidue.ub.media.monographs.Event;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
+import unidue.ub.services.getter.queryresults.RawLoanEvent;
+import unidue.ub.services.getter.queryresults.RawRequestEvent;
 
 public class EventGetter {
 
 	private JdbcTemplate jdbcTemplate;
-
-	private EventFilter eventFilter;
-
-	private ItemFilter itemFilter;
 
 	private int counter = 0;
 
@@ -31,26 +29,6 @@ public class EventGetter {
 	
 	public EventGetter(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
-		this.itemFilter = new ItemFilter("", "");
-		this.setEventFilter(new EventFilter(""));
-	}
-
-	public EventGetter(JdbcTemplate jdbcTemplate, ItemFilter itemFilter) {
-		this.jdbcTemplate = jdbcTemplate;
-		this.itemFilter = itemFilter;
-		this.setEventFilter(new EventFilter(""));
-	}
-
-	public EventGetter(JdbcTemplate jdbcTemplate, EventFilter eventFilter) {
-		this.jdbcTemplate = jdbcTemplate;
-		this.itemFilter = new ItemFilter("", "");
-		this.setEventFilter(eventFilter);
-	}
-
-	public EventGetter(JdbcTemplate jdbcTemplate, ItemFilter itemFilter, EventFilter eventFilter) {
-		this.jdbcTemplate = jdbcTemplate;
-		this.itemFilter = itemFilter;
-		this.setEventFilter(eventFilter);
 	}
 
 	public List<Event> getLoansByDocNumber(String identifier) {
@@ -160,7 +138,6 @@ public class EventGetter {
 				item = new Item("", rawLoanEvent.getItemId(), "", "", "", "");
 				manifestation.addItem(item);
 			}
-			if (itemFilter.matches(item)) {
 				Event loanEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(),
 						rawLoanEvent.getLoanHour(), "loan", rawLoanEvent.getBorrowerStatus(), counter++);
 				loanEvent.setItem(item);
@@ -170,7 +147,6 @@ public class EventGetter {
 				loanEvent.setEndEvent(returnEvent);
 				item.addEvent(loanEvent);
 				item.addEvent(returnEvent);
-			}
 		}
 		for (RawLoanEvent rawLoanEvent : rawOpenLoanEvents) {
 			Item item = manifestation.getItem(rawLoanEvent.getItemId());
@@ -178,12 +154,10 @@ public class EventGetter {
 				item = new Item("", rawLoanEvent.getItemId(), "", "", "", "");
 				manifestation.addItem(item);
 			}
-			if (itemFilter.matches(item)) {
 				Event loanEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(),
 						rawLoanEvent.getLoanHour(), "loan", rawLoanEvent.getBorrowerStatus(), counter++);
 				loanEvent.setItem(item);
 				item.addEvent(loanEvent);
-			}
 		}
 		for (RawRequestEvent rawRequestEvent : rawClosedRequestEvents) {
 			Item item = manifestation.getItem(rawRequestEvent.getItemId());
@@ -191,7 +165,6 @@ public class EventGetter {
 				item = new Item("", rawRequestEvent.getItemId(), "", "", "", "");
 				manifestation.addItem(item);
 			}
-			if (itemFilter.matches(item)) {
 				Event requestEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getOpenDate(),
 						rawRequestEvent.getOpenHour(), "request", "", counter++);
 				requestEvent.setItem(item);
@@ -201,7 +174,6 @@ public class EventGetter {
 				requestEvent.setEndEvent(holdEvent);
 				item.addEvent(requestEvent);
 				holdEvent.setItem(item);
-			}
 		}
 		for (RawRequestEvent rawRequestEvent : rawOpenRequestEvents) {
 			Item item = manifestation.getItem(rawRequestEvent.getItemId());
@@ -209,26 +181,10 @@ public class EventGetter {
 				item = new Item("", rawRequestEvent.getItemId(), "", "", "", "");
 				manifestation.addItem(item);
 			}
-			if (itemFilter.matches(item)) {
 				Event requestEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getOpenDate(),
 						rawRequestEvent.getOpenHour(), "request", "", counter++);
 				item.addEvent(requestEvent);
 				requestEvent.setItem(item);
-			}
 		}
-	}
-
-	/**
-	 * @return the eventFilter
-	 */
-	public EventFilter getEventFilter() {
-		return eventFilter;
-	}
-
-	/**
-	 * @param eventFilter the eventFilter to set
-	 */
-	public void setEventFilter(EventFilter eventFilter) {
-		this.eventFilter = eventFilter;
 	}
 }

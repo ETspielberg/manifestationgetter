@@ -123,11 +123,9 @@ public class GetterController {
 		buildReferenceShelfmark(identifier,exactBoolean);
 		shelfmarks.add(identifier);
 
-		ItemFilter itemFilter = new ItemFilter(collection, material);
-
 		ManifestationGetter manifestationgetter = new ManifestationGetter(jdbcTemplate);
 		ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
-		EventGetter eventgetter = new EventGetter(jdbcTemplate, itemFilter);
+		EventGetter eventgetter = new EventGetter(jdbcTemplate);
 		MABGetter mabGetter = new MABGetter(jdbcTemplate);
 		LOGGER.info(String.valueOf(shelfmarks.size()));
 

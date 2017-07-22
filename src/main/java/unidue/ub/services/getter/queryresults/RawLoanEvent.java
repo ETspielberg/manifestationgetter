@@ -1,4 +1,4 @@
-package unidue.ub.services.getter;
+package unidue.ub.services.getter.queryresults;
 
 public class RawLoanEvent {
 	
