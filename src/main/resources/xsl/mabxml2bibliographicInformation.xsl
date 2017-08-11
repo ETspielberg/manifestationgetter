@@ -21,7 +21,7 @@
   <xsl:apply-templates select="mabxml:feld[@nr &gt;='335' and @nr &lt;='355']" />
   </subtitle>
   <isbn>
-  <xsl:apply-templates select="mabxml:feld[@nr &gt;='540']" />
+  <xsl:apply-templates select="mabxml:feld[@nr ='540']" />
   </isbn>
   <doi>
   <xsl:apply-templates select="mabxml:feld[@nr='552']" />

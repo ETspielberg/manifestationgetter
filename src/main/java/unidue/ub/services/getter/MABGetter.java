@@ -1,7 +1,6 @@
 package unidue.ub.services.getter;
 
 import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +8,6 @@ import org.jdom2.Element;
 import org.jdom2.IllegalDataException;
 import org.jdom2.Namespace;
 import org.jdom2.Verifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import unidue.ub.media.monographs.BibliographicInformation;
@@ -25,8 +22,6 @@ import static unidue.ub.media.monographs.MonographTools.buildBibligraphicInforma
  * @version 1
  */
 public class MABGetter {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(MABGetter.class);
 
 	private JdbcTemplate jdbcTemplate;
 
@@ -49,11 +44,9 @@ public class MABGetter {
 	 * 
 	 * @param jdbcTemplate
 	 *            an <code>JdbcTemplate</code>-object
-	 * @exception SQLException
-	 *                exception querying the Aleph database
 	 */
 
-	public MABGetter(JdbcTemplate jdbcTemplate) {
+	MABGetter(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
@@ -63,28 +56,23 @@ public class MABGetter {
 	 * 
 	 * @param manifestation
 	 *            the document the bibliographics information are retrieved for
-	 * @exception Exception
-	 *                general exception
-	 * @return Element org.jdom2.element holding the bibliographic information
-	 *         in MAB format
 	 */
-	public void addSimpleMAB(Manifestation manifestation) {
+	void addSimpleMAB(Manifestation manifestation) {
 		BibliographicInformation bibliographicInformation = new BibliographicInformation();
 		List<MabBlob> mabBlobs = new ArrayList<>();
 		List<String> recKeys = jdbcTemplate.query(sqlRecKey,
 				new Object[] { "EDU50" + manifestation.getTitleID() + "%" }, (rs, rowNum) -> rs.getString(1));
 		for (String recKey : recKeys) {
-			LOGGER.info("retrieving MAB data for record " + recKey);
 			mabBlobs = jdbcTemplate.query(sql, new Object[] { recKey },
 					(rs, rowNum) -> new MabBlob(rs.getBytes(1), rs.getInt(2)));
 		}
-		LOGGER.info("found " + mabBlobs.size() + " MAB records");
 		if (mabBlobs.size() > 0) {
 			Element mabXML = buildXML(mabBlobs.get(0));
 			bibliographicInformation = buildBibligraphicInformationFromMABXML(mabXML);
 		}
+		bibliographicInformation.setTitleId(manifestation.getTitleID());
+		bibliographicInformation.setType("simple");
 		manifestation.setBibliographicInformation(bibliographicInformation);
-
 	}
 
 	/**
@@ -93,12 +81,9 @@ public class MABGetter {
 	 * 
 	 * @param manifestation
 	 *            the document the bibliographics information are retrieved for
-	 * @exception Exception
-	 *                general exception
-	 * @return Element org.jdom2.element holding the bibliographic information
-	 *         in MAB format
 	 */
 	public void addFullMAB(Manifestation manifestation) {
+		getSuper = false;
 		BibliographicInformation bibliographicInformation = new BibliographicInformation();
 		List<MabBlob> mabBlobs = new ArrayList<>();
 		List<String> recKeys = jdbcTemplate.query(sqlRecKey,
@@ -110,15 +95,9 @@ public class MABGetter {
 		if (mabBlobs.size() > 0) {
 		Element mabXML = buildXML(mabBlobs.get(0));
 
-		// set flag to false, so that no �berordnung exists. flag will be
-		// changed, if a field "010" is found.
-		getSuper = false;
-		// if the flag has been changed, get also the MAB for the �berordnung
-		// and append it to the resulting XML.
-
 		if (getSuper) {
 			String recKeySuper = getSuperRecKey(superHTNumber);
-			if (recKeySuper != "") {
+			if (!recKeySuper.equals("")) {
 				MabBlob mabBlobSuper = jdbcTemplate.query(sql, new Object[] { recKeySuper },
 						(rs, rowNum) -> new MabBlob(rs.getBytes(1), rs.getInt(2))).get(1);
 				Element mabXMLSuper = buildXML(mabBlobSuper);
@@ -191,7 +170,7 @@ public class MABGetter {
 				if (fieldcont.length() > 0)
 					setFieldText(feld, fieldcont);
 			} else {
-				int dd1 = 0, dd2 = 0;
+				int dd1, dd2 = 0;
 
 				while (dd2 < fieldcont.length()) {
 					dd1 = fieldcont.indexOf("$$", dd2);
@@ -239,7 +218,7 @@ public class MABGetter {
 			try {
 				field.addContent(text);
 			} catch (IllegalDataException idx) {
-				StringBuffer sb = new StringBuffer();
+				StringBuilder sb = new StringBuilder();
 
 				for (int i = 0; i < text.length(); i++)
 					if (Verifier.isXMLCharacter(text.charAt(i)))

@@ -106,7 +106,7 @@ public class GetterController {
 	}
 
 
-
+	@CrossOrigin(origins = "http://localhost:3000")
 	@RequestMapping("/fullManifestation")
 	public ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
 			@RequestParam("collection") String collection, @RequestParam("material") String material,
