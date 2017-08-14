@@ -3,6 +3,8 @@ package unidue.ub.services.getter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import unidue.ub.media.monographs.Event;
@@ -12,6 +14,8 @@ import unidue.ub.services.getter.queryresults.RawLoanEvent;
 import unidue.ub.services.getter.queryresults.RawRequestEvent;
 
 public class EventGetter {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(EventGetter.class);
 
 	private JdbcTemplate jdbcTemplate;
 
@@ -47,6 +51,13 @@ public class EventGetter {
 			Event returnEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(), rawLoanEvent.getLoanHour(),
 					"return", rawLoanEvent.getBorrowerStatus(), counter--);
 			loanEvent.setEndEvent(returnEvent);
+			LOGGER.info(String.valueOf(loanEvent.getTime()));
+			if (loanEvent.getEndEvent()!= null)
+			LOGGER.info(String.valueOf(loanEvent.getEndEvent().getTime()));
+			LOGGER.info(String.valueOf(loanEvent.getDuration()));
+
+			loanEvent.calculateDuration();
+
 			events.add(loanEvent);
 			events.add(returnEvent);
 		}
@@ -145,8 +156,9 @@ public class EventGetter {
 						rawLoanEvent.getReturnHour(), "return", rawLoanEvent.getBorrowerStatus(), counter--);
 				returnEvent.setItem(item);
 				loanEvent.setEndEvent(returnEvent);
+				loanEvent.calculateDuration();
 				item.addEvent(loanEvent);
-				item.addEvent(returnEvent);
+				//item.addEvent(returnEvent);
 		}
 		for (RawLoanEvent rawLoanEvent : rawOpenLoanEvents) {
 			Item item = manifestation.getItem(rawLoanEvent.getItemId());
@@ -157,6 +169,7 @@ public class EventGetter {
 				Event loanEvent = new Event(rawLoanEvent.getItemId(), rawLoanEvent.getLoanDate(),
 						rawLoanEvent.getLoanHour(), "loan", rawLoanEvent.getBorrowerStatus(), counter++);
 				loanEvent.setItem(item);
+				loanEvent.calculateDuration();
 				item.addEvent(loanEvent);
 		}
 		for (RawRequestEvent rawRequestEvent : rawClosedRequestEvents) {
@@ -170,8 +183,9 @@ public class EventGetter {
 				requestEvent.setItem(item);
 				Event holdEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getHoldDate(),
 						rawRequestEvent.getOpenHour(), "hold", "", counter--);
-				item.addEvent(holdEvent);
+				//item.addEvent(holdEvent);
 				requestEvent.setEndEvent(holdEvent);
+				requestEvent.calculateDuration();
 				item.addEvent(requestEvent);
 				holdEvent.setItem(item);
 		}
@@ -184,6 +198,7 @@ public class EventGetter {
 				Event requestEvent = new Event(rawRequestEvent.getItemId(), rawRequestEvent.getOpenDate(),
 						rawRequestEvent.getOpenHour(), "request", "", counter++);
 				item.addEvent(requestEvent);
+				requestEvent.calculateDuration();
 				requestEvent.setItem(item);
 		}
 	}

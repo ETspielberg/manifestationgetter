@@ -127,14 +127,12 @@ public class GetterController {
 		ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
 		EventGetter eventgetter = new EventGetter(jdbcTemplate);
 		MABGetter mabGetter = new MABGetter(jdbcTemplate);
-		LOGGER.info(String.valueOf(shelfmarks.size()));
 
 		do {
 			for (String shelfmark : shelfmarks) {
 				shelfmarkNew = false;
 				if (shelfmarksQueried.contains(shelfmark))
 					continue;
-				LOGGER.info("collecting shelfmark " + shelfmark);
 				List<Manifestation> foundManifestations = manifestationgetter.getDocumentsByShelfmark(shelfmark, exactBoolean);
 				shelfmarksQueried.add(shelfmark);
 				if (foundManifestations.isEmpty())
@@ -142,7 +140,6 @@ public class GetterController {
 				for (Manifestation foundManifestation : foundManifestations) {
 					if (manifestationsQueried.contains(foundManifestation.getTitleID()))
 						continue;
-					LOGGER.info("building manifestation with title ID " + foundManifestation.getTitleID());
 					List<Item> items = itemGetter.getItemsByDocNumber(foundManifestation.getTitleID());
 					for (Item item : items)
 						if (!itemIds.contains(item.getItemId())) {
