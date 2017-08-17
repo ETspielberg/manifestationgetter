@@ -39,8 +39,11 @@ class ItemGetter {
 				rs.getString("z30_price")
 				)));
 		for (Item item : items) {
-			if (!(item.getItemStatus().equals("89") || item.getItemStatus().equals("90") || item.getItemStatus().equals("xx")))
+			if (!(item.getItemStatus().equals("89") || item.getItemStatus().equals("90") || item.getItemStatus().equals("xx"))) {
 				item.setDeletionDate("");
+			} else {
+				item.setShelfmark("???");
+			}
 		}
 		List<RawDeletedItem> rawDeletedItems = new ArrayList<>();
 		rawDeletedItems.addAll(jdbcTemplate.query(getDeletedItems, new Object[]{identifier + "%"},(rs, rowNum) ->
@@ -56,13 +59,16 @@ class ItemGetter {
 				rs.getString("z30h_h_date"),
 				rs.getString("z30h_price")
 				)));
-		for (RawDeletedItem rawDeletedItem : rawDeletedItems) {
-			Item item = rawDeletedItem.getItem();
-			String itemStatus = rawDeletedItem.getItemStatus();
-			if ((itemStatus.equals("89") || itemStatus.equals("90") || itemStatus.equals("xx"))) {
-				item.setDeletionDate(rawDeletedItem.getUpdateDate());
+		if (rawDeletedItems.size() > 0) {
+			for (RawDeletedItem rawDeletedItem : rawDeletedItems) {
+				Item item = rawDeletedItem.getItem();
+				String itemStatus = rawDeletedItem.getItemStatus();
+				if ((itemStatus.equals("89") || itemStatus.equals("90") || itemStatus.equals("xx"))) {
+					item.setDeletionDate(rawDeletedItem.getUpdateDate());
+				}
+				item.setShelfmark("???");
+				items.add(item);
 			}
-			items.add(item);
 		}
 		cleanUpFields(items);
 		return items;

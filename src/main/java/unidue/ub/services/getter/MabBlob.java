@@ -1,12 +1,12 @@
 package unidue.ub.services.getter;
 
-public class MabBlob {
+class MabBlob {
 	
 	private byte[] mabBlob;
 	
 	private int mabLength;
 	
-	public MabBlob(byte[] mabBlob, int mabLength) {
+	MabBlob(byte[] mabBlob, int mabLength) {
 		this.mabBlob = mabBlob;
 		this.mabLength = mabLength;
 	}
@@ -14,31 +14,14 @@ public class MabBlob {
 	/**
 	 * @return the mabBlob
 	 */
-	public byte[] getMabBlob() {
+	byte[] getMabBlob() {
 		return mabBlob;
 	}
 
 	/**
 	 * @return the mabLength
 	 */
-	public int getMabLength() {
+	int getMabLength() {
 		return mabLength;
 	}
-
-	/**
-	 * @param mabBlob the mabBlob to set
-	 */
-	public void setMabBlob(byte[] mabBlob) {
-		this.mabBlob = mabBlob;
-	}
-
-	/**
-	 * @param mabLength the mabLength to set
-	 */
-	public void setMabLength(int mabLength) {
-		this.mabLength = mabLength;
-	}
-	
-	
-
 }

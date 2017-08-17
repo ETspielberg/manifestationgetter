@@ -23,11 +23,11 @@ public class ManifestationGetter {
 	
 	private final static String SUB_D = "_d";
 	
-	public ManifestationGetter(JdbcTemplate jdbcTemplate) {
+	ManifestationGetter(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 	
-	public List<Manifestation> getDocumentsByShelfmark(String identifier, boolean exact) {
+	List<Manifestation> getDocumentsByShelfmark(String identifier, boolean exact) {
 		List<Manifestation> manifestations = new ArrayList<>();
 		String suffix = "";
 		if (identifier.endsWith(SUB_D)) {
@@ -44,14 +44,14 @@ public class ManifestationGetter {
 	}
 
 
-	public List<Manifestation> getDocumentsByEtat(String identifier, boolean exact) {
+	List<Manifestation> getDocumentsByEtat(String identifier) {
 		String query = getEtat + orderBy;
 		List<Manifestation> manifestations = new ArrayList<>();
 		manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
 		return manifestations;
 	}
 		
-	public List<Manifestation> getDocumentsByNotation(String identifier) {
+	List<Manifestation> getDocumentsByNotation(String identifier) {
 		List<Manifestation> manifestations = new ArrayList<>();
 		manifestations.addAll(jdbcTemplate.query(getByNotation, new Object[]{identifier},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
 		return manifestations;

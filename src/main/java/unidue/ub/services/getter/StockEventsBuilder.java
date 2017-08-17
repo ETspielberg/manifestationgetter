@@ -4,10 +4,8 @@ import unidue.ub.media.monographs.Event;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
 
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,7 +15,7 @@ import java.util.List;
  * @author Eike Spielberg, Frank L\u00FCtzenkirchen
  * @version 1
  */
-public class StockEventsBuilder {
+class StockEventsBuilder {
 
 	private static final String EARLY_IN_THE_MORNING = "0630";
 
@@ -32,11 +30,8 @@ public class StockEventsBuilder {
 	 *
 	 * @param manifestation
 	 *            the document holding the items
-	 * 
-	 * @exception ParseException
-	 *                exception parsing the date field
 	 */
-	public static void buildStockEvents(Manifestation manifestation) {
+	static void buildStockEvents(Manifestation manifestation) {
 		setLatestInventoryDate(manifestation.getItems());
 
 		// go through all items and set the inventory and deletion dates. In
@@ -53,58 +48,14 @@ public class StockEventsBuilder {
 	 *
 	 * @param item
 	 *            the item
-	 * @exception ParseException
-	 *                exception parsing the date field
 	 */
 	private static void buildStockEvents(Item item) {
 		Event inventoryEvent = buildInventoryEvent(item);
 		Event deletionEvent = buildDeletionEvent(item);
-		if (deletionEvent != null)
+		if (deletionEvent != null) {
 			inventoryEvent.setEndEvent(deletionEvent);
-	}
-
-	/**
-	 * retrieves the stock events for an item.
-	 *
-	 * @param item
-	 *            the item
-	 * @return events list of stock events
-	 * @exception ParseException
-	 *                exception parsing the date field
-	 */
-	public static List<Event> getStockEvents(Item item) {
-		List<Event> events = new ArrayList<>();
-		Event inventoryEvent = buildInventoryEvent(item);
-		Event deletionEvent = buildDeletionEvent(item);
-		if (deletionEvent != null)
-			inventoryEvent.setEndEvent(deletionEvent);
-		events.add(inventoryEvent);
-		events.add(deletionEvent);
-		return events;
-	}
-
-	/**
-	 * retrieves the stock events for a list of item.
-	 *
-	 * @param items
-	 *            the list of items
-	 * @exception ParseException
-	 *                exception parsing the date field
-	 * @return events list of stock events
-	 */
-
-	public static List<Event> getStockEvents(List<Item> items) {
-		setLatestInventoryDate(items);
-		List<Event> events = new ArrayList<>();
-		for (Item item : items) {
-			Event inventoryEvent = buildInventoryEvent(item);
-			Event deletionEvent = buildDeletionEvent(item);
-			if (deletionEvent != null)
-				inventoryEvent.setEndEvent(deletionEvent);
-			events.add(inventoryEvent);
-			events.add(deletionEvent);
 		}
-		return events;
+		inventoryEvent.calculateDuration();
 	}
 
 	private static Event buildInventoryEvent(Item item) {

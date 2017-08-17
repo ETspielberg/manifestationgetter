@@ -51,7 +51,7 @@ public class GetterController {
 		case "shelfmark":
 			manifestations = manifestationgetter.getDocumentsByShelfmark(identifier, exactBoolean);
 		case "etat":
-			manifestations = manifestationgetter.getDocumentsByEtat(identifier, exactBoolean);
+			manifestations = manifestationgetter.getDocumentsByEtat(identifier);
 		case "notation":
 			manifestations = manifestationgetter.getDocumentsByNotation(identifier);
 		}

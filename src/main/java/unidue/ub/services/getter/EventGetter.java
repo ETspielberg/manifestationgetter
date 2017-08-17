@@ -139,7 +139,7 @@ public class EventGetter {
 		rawOpenRequestEvents
 				.addAll(jdbcTemplate.query(getOpenRequests, new Object[] { manifestation.getTitleID() + "%" },
 						(rs, rowNum) -> new RawRequestEvent(rs.getString("z37_rec_key"), rs.getString("z37_open_date"),
-								rs.getString("z37_open_hour"), rs.getString("z37_pick_up_location"))));
+								rs.getString("z37_open_hour"), rs.getString("z37_pickup_location"))));
 
 		// convert raw events to events, add extra items where necessary, and
 		// connect events to items.
