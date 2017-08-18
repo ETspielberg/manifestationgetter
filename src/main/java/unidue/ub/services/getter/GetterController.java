@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import unidue.ub.media.analysis.Nrequests;
+import unidue.ub.media.analysis.TimelineGroup;
 import unidue.ub.media.monographs.Event;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
@@ -164,6 +165,9 @@ public class GetterController {
 		for (Manifestation manifestation : manifestations) {
 			StockEventsBuilder.buildStockEvents(manifestation);
 			mabGetter.addSimpleMAB(manifestation);
+			manifestation.buildUsergroupList();
+			TimelineGenerator tlg = new TimelineGenerator(manifestation);
+			tlg.addTimelines();
 		}
 		return ResponseEntity.ok(new ArrayList<>(manifestations));
 	}
