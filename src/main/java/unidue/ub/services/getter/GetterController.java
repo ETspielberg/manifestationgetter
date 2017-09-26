@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import unidue.ub.media.analysis.Nrequests;
-import unidue.ub.media.analysis.TimelineGroup;
 import unidue.ub.media.monographs.Event;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
@@ -110,7 +109,6 @@ public class GetterController {
 	@CrossOrigin(origins = "http://localhost:3000")
 	@RequestMapping("/fullManifestation")
 	public ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
-			@RequestParam("collection") String collection, @RequestParam("material") String material,
 			@RequestParam("exact") String exact) {
 
 		shelfmarks = new HashSet<>();
@@ -166,13 +164,11 @@ public class GetterController {
 			StockEventsBuilder.buildStockEvents(manifestation);
 			mabGetter.addSimpleMAB(manifestation);
 			manifestation.buildUsergroupList();
-			TimelineGenerator tlg = new TimelineGenerator(manifestation);
-			tlg.addTimelines();
 		}
 		return ResponseEntity.ok(new ArrayList<>(manifestations));
 	}
 
-	private void buildReferenceShelfmark(String shelfmark, boolean exact) {
+	private static void buildReferenceShelfmark(String shelfmark, boolean exact) {
 		shelfmark = shelfmark.trim();
 		shelfmark = shelfmark.replaceAll("\\+\\d+", "");
 		if (!exact)
@@ -181,6 +177,26 @@ public class GetterController {
 
 	private boolean isShelfmarkNew(String shelfmark) {
 		return !shelfmark.equals("???") && !shelfmarks.contains(shelfmark) && !shelfmark.isEmpty();
+	}
+
+	@RequestMapping("/buildFullManifestation")
+	public ResponseEntity<?> buildFullManifestation(@RequestParam("identifier") String identifier) {
+		Manifestation manifestation = new Manifestation(identifier);
+		Set<String> itemIds = new HashSet<>();
+		ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
+		EventGetter eventgetter = new EventGetter(jdbcTemplate);
+		MABGetter mabGetter = new MABGetter(jdbcTemplate);
+		List<Item> items = itemGetter.getItemsByDocNumber(manifestation.getTitleID());
+		for (Item item : items)
+			if (!itemIds.contains(item.getItemId())) {
+				manifestation.addItem(item);
+				itemIds.add(item.getItemId());
+			}
+		eventgetter.addEventsToManifestation(manifestation);
+		StockEventsBuilder.buildStockEvents(manifestation);
+		mabGetter.addSimpleMAB(manifestation);
+		manifestation.buildUsergroupList();
+		return ResponseEntity.ok(manifestation);
 	}
 
 	@RequestMapping("/nrequests")

@@ -61,13 +61,17 @@ class ItemGetter {
 				)));
 		if (rawDeletedItems.size() > 0) {
 			for (RawDeletedItem rawDeletedItem : rawDeletedItems) {
-				Item item = rawDeletedItem.getItem();
-				String itemStatus = rawDeletedItem.getItemStatus();
-				if ((itemStatus.equals("89") || itemStatus.equals("90") || itemStatus.equals("xx"))) {
-					item.setDeletionDate(rawDeletedItem.getUpdateDate());
+				try {
+					Item item = rawDeletedItem.getItem();
+					String itemStatus = rawDeletedItem.getItemStatus();
+					if ((itemStatus.equals("89") || itemStatus.equals("90") || itemStatus.equals("xx"))) {
+						item.setDeletionDate(rawDeletedItem.getUpdateDate());
+					}
+					item.setShelfmark("???");
+					items.add(item);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				item.setShelfmark("???");
-				items.add(item);
 			}
 		}
 		cleanUpFields(items);

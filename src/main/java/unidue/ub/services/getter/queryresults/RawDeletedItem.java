@@ -147,6 +147,8 @@ public class RawDeletedItem {
     }
 
     public Item getItem() {
+        if (itemStatus == null)
+            itemStatus = "";
         Item item = new Item(itemId,collection, shelfmark, subLibrary, material,
                 itemStatus, processStatus, inventoryDate, hDate, price);
         if ((itemStatus.equals("89") || itemStatus.equals("90") || itemStatus.equals("xx"))) {

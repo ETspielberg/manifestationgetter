@@ -47,13 +47,13 @@ public class ManifestationGetter {
 	List<Manifestation> getDocumentsByEtat(String identifier) {
 		String query = getEtat + orderBy;
 		List<Manifestation> manifestations = new ArrayList<>();
-		manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
+		manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier + "%"},(rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
 		return manifestations;
 	}
 		
 	List<Manifestation> getDocumentsByNotation(String identifier) {
 		List<Manifestation> manifestations = new ArrayList<>();
-		manifestations.addAll(jdbcTemplate.query(getByNotation, new Object[]{identifier},(rs, rowNum) -> new Manifestation(rs.getString("docNumber"))));
+		manifestations.addAll(jdbcTemplate.query(getByNotation, new Object[]{identifier + "%"},(rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
 		return manifestations;
 	}
 

@@ -55,6 +55,7 @@ class StockEventsBuilder {
 		if (deletionEvent != null) {
 			inventoryEvent.setEndEvent(deletionEvent);
 		}
+		item.addEvent(inventoryEvent);
 		inventoryEvent.calculateDuration();
 	}
 
@@ -63,7 +64,7 @@ class StockEventsBuilder {
 		String date = item.getInventoryDate();
 		if (date.length() != 8)
 			date = DATE_OF_ANCIENT_INVENTORY;
-		return new Event(item, date, EARLY_IN_THE_MORNING, "inventory", BY_LIBRARY_STAFF, sortNumber, +1);
+		return new Event(item.getItemId(), date, EARLY_IN_THE_MORNING, "inventory", BY_LIBRARY_STAFF, sortNumber);
 	}
 
 	private static Event buildDeletionEvent(Item item) {
@@ -75,7 +76,7 @@ class StockEventsBuilder {
 		else if (date.length() != 8)
 			date = earliestPossibleDeletionDate;
 
-		return new Event(item, date, LATE_IN_THE_EVENING, "deletion", BY_LIBRARY_STAFF, sortNumber, -1);
+		return new Event(item.getItemId(), date, LATE_IN_THE_EVENING, "deletion", BY_LIBRARY_STAFF, sortNumber);
 	}
 
 	private static String currentDate() {
