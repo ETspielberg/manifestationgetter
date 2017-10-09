@@ -13,7 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import unidue.ub.media.monographs.BibliographicInformation;
 import unidue.ub.media.monographs.Manifestation;
 
-import static unidue.ub.media.monographs.MonographTools.buildBibligraphicInformationFromMABXML;
+import static unidue.ub.media.tools.MonographTools.buildBibligraphicInformationFromMABXML;
 
 /**
  * Retrieves the MAB-data from the Aleph database.
@@ -58,10 +58,15 @@ public class MABGetter {
 	 *            the document the bibliographics information are retrieved for
 	 */
 	void addSimpleMAB(Manifestation manifestation) {
+		BibliographicInformation bibliographicInformation = getSimpleMab(manifestation.getTitleID());
+		manifestation.setBibliographicInformation(bibliographicInformation);
+	}
+
+	BibliographicInformation getSimpleMab(String identifier) {
 		BibliographicInformation bibliographicInformation = new BibliographicInformation();
 		List<MabBlob> mabBlobs = new ArrayList<>();
 		List<String> recKeys = jdbcTemplate.query(sqlRecKey,
-				new Object[] { "EDU50" + manifestation.getTitleID() + "%" }, (rs, rowNum) -> rs.getString(1));
+				new Object[] { "EDU50" +identifier + "%" }, (rs, rowNum) -> rs.getString(1));
 		for (String recKey : recKeys) {
 			mabBlobs = jdbcTemplate.query(sql, new Object[] { recKey },
 					(rs, rowNum) -> new MabBlob(rs.getBytes(1), rs.getInt(2)));
@@ -70,9 +75,9 @@ public class MABGetter {
 			Element mabXML = buildXML(mabBlobs.get(0));
 			bibliographicInformation = buildBibligraphicInformationFromMABXML(mabXML);
 		}
-		bibliographicInformation.setTitleId(manifestation.getTitleID());
+		bibliographicInformation.setTitleId(identifier);
 		bibliographicInformation.setType("simple");
-		manifestation.setBibliographicInformation(bibliographicInformation);
+		return bibliographicInformation;
 	}
 
 	/**
