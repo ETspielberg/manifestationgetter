@@ -72,59 +72,12 @@ public class GetterController {
             }
             case "barcode": {
                 manifestations = manifestationgetter.getManifestationsByBarcode(identifier);
-                log.info("retrieving manifestations by barcode " + identifier);
+                log.info("retrieving manifestations by barcode " + identifier.toUpperCase());
                 break;
             }
         }
         return ResponseEntity.ok(manifestations);
     }
-
-    @RequestMapping("/items")
-    public ResponseEntity<?> getItems(@RequestParam("identifier") String identifier,
-                                      @RequestParam("mode") String mode) {
-        List<Item> items = new ArrayList<>();
-        ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
-        if (mode.equals("docNumber")) {
-            log.info("retrieving items for docNumber " + identifier);
-            items = itemGetter.getItemsByDocNumber(identifier);
-        }
-
-        if (mode.equals("barcode")) {
-            log.info("retrieving items for Barcode " + identifier);
-            items = itemGetter.getItemsByBarcode(identifier);
-            log.info("found " + items.size() + " items");
-        }
-        return ResponseEntity.ok(items);
-    }
-
-    @RequestMapping("/loans")
-    public ResponseEntity<?> getLoans(@RequestParam("identifier") String identifier) {
-        EventGetter eventGetter = new EventGetter(jdbcTemplate);
-        List<Event> events = eventGetter.getLoansByDocNumber(identifier);
-        return ResponseEntity.ok(events);
-    }
-
-    @RequestMapping("/requests")
-    public ResponseEntity<?> getEvents(@RequestParam("identifier") String identifier,
-                                       @RequestParam("mode") String mode) {
-        List<Event> events = new ArrayList<>();
-        EventGetter eventGetter = new EventGetter(jdbcTemplate);
-        switch (mode) {
-            case "docNumber":
-                events = eventGetter.getRequestsByDocNumber(identifier);
-            case "latestRequests":
-
-        }
-        return ResponseEntity.ok(events);
-    }
-
-    @RequestMapping("/allopenrequests")
-    public ResponseEntity<?> getEvents() {
-        EventGetter eventGetter = new EventGetter(jdbcTemplate);
-        List<Event> events = eventGetter.getOpenRequests();
-        return ResponseEntity.ok(events);
-    }
-
 
     @CrossOrigin(origins = "http://localhost:3000")
     @RequestMapping("/fullManifestation")

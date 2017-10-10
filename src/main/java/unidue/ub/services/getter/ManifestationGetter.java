@@ -19,9 +19,9 @@ public class ManifestationGetter {
 	
 	private final String getByNotation = "select distinct substr(z30_rec_key,1,9) as titleId from edu50.z30 where ( z30_call_no like ?)";
 
-	private final String getByOpenRequests = "select distinct substr(z37_rec_key,1,9) as titleId from edu50.z37";
+	private final String getByOpenRequests = "select distinct substr(z37_rec_key,1,9) as titleId from edu50.z37 where z37_pickup_location != 'ILLDT' and (z37_end_request_date >(select to_char(sysdate, 'YYYYMMDD') from dual))";
 
-	private final String getByBarcode = "select distinct substr(z30_rec_key,1,9) as titleId from edu50.z30 where z30_barcode = ?";
+	private final String getByBarcode = "select substr(z30_rec_key,1,9) as titleId from edu50.z30 where z30_barcode = ?";
 	
 	private JdbcTemplate jdbcTemplate;
 	
@@ -55,7 +55,7 @@ public class ManifestationGetter {
 
 	List<Manifestation> getManifestationsByBarcode(String barcode) {
 		List<Manifestation> manifestations = new ArrayList<>();
-		manifestations.addAll(jdbcTemplate.query(getByBarcode, new Object[]{barcode + "%"},(rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
+		manifestations.addAll(jdbcTemplate.query(getByBarcode, new Object[]{barcode.toUpperCase().trim()},(rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
 		return manifestations;
 	}
 
