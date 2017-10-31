@@ -137,6 +137,26 @@ public class EventGetter {
         addRawRequestEventToManifestation(rawOpenRequestEvents,manifestation,false);
     }
 
+    void addAcitveEventsToManifestation(Manifestation manifestation) {
+        // prepare all raw events
+        List<RawLoanEvent> rawOpenLoanEvents = new ArrayList<>();
+        List<RawRequestEvent> rawOpenRequestEvents = new ArrayList<>();
+
+        // collect all raw events
+        rawOpenLoanEvents.addAll(jdbcTemplate.query(getOpenLoans, new Object[]{manifestation.getTitleID() + "%"},
+                (rs, rowNum) -> new RawLoanEvent(rs.getString("z36_rec_key"), rs.getString("z36_sub_library"),
+                        rs.getString("z36_bor_status"), rs.getString("z36_material"), rs.getString("z36_loan_date"),
+                        rs.getString("z36_loan_hour"), "",
+                        "")));
+        rawOpenRequestEvents
+                .addAll(jdbcTemplate.query(getOpenRequests, new Object[]{manifestation.getTitleID() + "%"},
+                        (rs, rowNum) -> new RawRequestEvent(rs.getString("z37_rec_key"), rs.getString("z37_open_date"),
+                                rs.getString("z37_open_hour"), rs.getString("z37_pickup_location"))));
+
+        addRawLoanEventToManifestation(rawOpenLoanEvents,manifestation, false);
+        addRawRequestEventToManifestation(rawOpenRequestEvents,manifestation,false);
+    }
+
     private void addRawRequestEventToManifestation(List<RawRequestEvent> rawEvents, Manifestation manifestation, boolean isClosed) {
         for (RawRequestEvent rawEvent : rawEvents) {
             Item item = manifestation.getItem(rawEvent.getItemId());

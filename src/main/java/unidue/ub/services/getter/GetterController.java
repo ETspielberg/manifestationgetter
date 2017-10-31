@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import unidue.ub.media.monographs.Event;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
 
@@ -157,6 +156,28 @@ public class GetterController {
         Manifestation manifestation = new Manifestation(identifier);
         extendManifestation(manifestation);
         return ResponseEntity.ok(manifestation);
+    }
+    
+    @RequestMapping("buildActiveManifestation")
+    public ResponseEntity<?> buildActiveManifestation(@RequestParam("identifier") String identifier) {
+        Manifestation manifestation = new Manifestation(identifier);
+        extendActiveManifestation(manifestation);
+        return ResponseEntity.ok(manifestation);
+    }
+
+    private void extendActiveManifestation(Manifestation manifestation) {
+        Set<String> itemIds = new HashSet<>();
+        ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
+        EventGetter eventgetter = new EventGetter(jdbcTemplate);
+        MABGetter mabGetter = new MABGetter(jdbcTemplate);
+        List<Item> items = itemGetter.getItemsByDocNumber(manifestation.getTitleID());
+        for (Item item : items)
+            if (!itemIds.contains(item.getItemId())) {
+                manifestation.addItem(item);
+                itemIds.add(item.getItemId());
+            }
+        eventgetter.addAcitveEventsToManifestation(manifestation);
+        mabGetter.addSimpleMAB(manifestation);
     }
 
     private void extendManifestation(Manifestation manifestation) {
