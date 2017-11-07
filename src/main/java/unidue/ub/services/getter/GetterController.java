@@ -1,9 +1,7 @@
 package unidue.ub.services.getter;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
+import unidue.ub.services.getter.queryresults.RawJournalprices;
 
 @Controller
 @RefreshScope
@@ -163,6 +162,21 @@ public class GetterController {
         Manifestation manifestation = new Manifestation(identifier);
         extendActiveManifestation(manifestation);
         return ResponseEntity.ok(manifestation);
+    }
+
+    @RequestMapping("journalprices")
+    public void getJournalPrices(@RequestParam("identifier") String identifier, @RequestParam("type") String type) throws SQLException {
+        JournalPriceGetter getter = new JournalPriceGetter(jdbcTemplate);
+        switch (type) {
+            case "journalcollection" :  {
+                getter.getJournalcollectionprices(identifier);
+                break;
+            }
+            case "journal" :  {
+                getter.getJournalPrice(identifier);
+                break;
+            }
+        }
     }
 
     private void extendActiveManifestation(Manifestation manifestation) {
