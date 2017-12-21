@@ -2,6 +2,7 @@ package unidue.ub.services.getter;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +22,6 @@ import unidue.ub.services.getter.queryresults.RawJournalprices;
 
 @Controller
 @RefreshScope
-@RequestMapping("/getter")
-@CrossOrigin(origins = "http://localhost")
 public class GetterController {
 
     @Value("${ub.statistics.settings.url}")
@@ -34,6 +33,9 @@ public class GetterController {
     private static final Logger log = LoggerFactory.getLogger(GetterController.class);
 
     private Set<String> shelfmarks;
+
+    @Value("${ub.statistics.shelfmark.regex}")
+    String shelfmarkRegex;
 
     @Autowired
     public GetterController(JdbcTemplate jdbcTemplate) {
@@ -77,7 +79,6 @@ public class GetterController {
         return ResponseEntity.ok(manifestations);
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
     @RequestMapping("/fullManifestation")
     public ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
                                                   @RequestParam("exact") String exact) {
@@ -98,15 +99,19 @@ public class GetterController {
         EventGetter eventgetter = new EventGetter(jdbcTemplate);
         MABGetter mabGetter = new MABGetter(jdbcTemplate);
 
+        Pattern pattern = Pattern.compile(shelfmarkRegex);
+
         do {
             for (String shelfmark : shelfmarks) {
-                shelfmarkNew = false;
+                log.info("collecting shelfmark " + shelfmark);
+
                 if (shelfmarksQueried.contains(shelfmark))
                     continue;
                 List<Manifestation> foundManifestations = manifestationgetter.getDocumentsByShelfmark(shelfmark, exactBoolean);
                 shelfmarksQueried.add(shelfmark);
                 if (foundManifestations.isEmpty())
                     continue;
+
                 for (Manifestation foundManifestation : foundManifestations) {
                     if (manifestationsQueried.contains(foundManifestation.getTitleID()))
                         continue;
@@ -119,16 +124,20 @@ public class GetterController {
                     eventgetter.addEventsToManifestation(foundManifestation);
                     manifestations.add(foundManifestation);
 
-                    for (String callNo : foundManifestation.getShelfmarks()) {
-                        buildReferenceShelfmark(callNo, exactBoolean);
-                        shelfmarkNew = shelfmarkNew || isShelfmarkNew(callNo);
-                        if (shelfmarkNew)
-                            shelfmarks.add(callNo);
-                    }
                     if (!manifestationsQueried.contains(foundManifestation.getTitleID()))
                         manifestationsQueried.add(foundManifestation.getTitleID());
                 }
             }
+            shelfmarkNew = false;
+            for (Manifestation manifestation : manifestations) {
+                for (String callNo : manifestation.getShelfmarks()) {
+                    buildReferenceShelfmark(callNo, exactBoolean);
+                    shelfmarkNew = (shelfmarkNew || isShelfmarkNew(callNo)) && pattern.matcher(callNo).find();
+                    if (shelfmarkNew)
+                        shelfmarks.add(callNo);
+                }
+            }
+
         } while (shelfmarkNew);
 
         for (Manifestation manifestation : manifestations) {

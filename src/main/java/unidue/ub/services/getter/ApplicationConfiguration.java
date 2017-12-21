@@ -8,15 +8,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 @Configuration
 public class ApplicationConfiguration {
-
+    /*
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("http://localhost:3000");
+                registry.addMapping("http://localhost:4200");
             }
         };
     }
+    */
 }
 
