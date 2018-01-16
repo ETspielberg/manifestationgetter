@@ -12,17 +12,15 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
-import unidue.ub.services.getter.queryresults.RawJournalprices;
 
 @Controller
 @RefreshScope
-public class GetterController {
+public class GetterController implements GetterClient {
 
     @Value("${ub.statistics.settings.url}")
     String settingsUrl;
@@ -42,7 +40,8 @@ public class GetterController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @RequestMapping("/manifestations")
+    @Override
+    @GetMapping("/manifestations")
     public ResponseEntity<?> getManifestations(@RequestParam("identifier") String identifier, @RequestParam("exact") String exact,
                                                @RequestParam("mode") String mode) {
 
@@ -79,7 +78,8 @@ public class GetterController {
         return ResponseEntity.ok(manifestations);
     }
 
-    @RequestMapping("/fullManifestation")
+    @Override
+    @GetMapping("/fullManifestation")
     public ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
                                                   @RequestParam("exact") String exact) {
 
@@ -159,21 +159,24 @@ public class GetterController {
         return !shelfmark.equals("???") && !shelfmarks.contains(shelfmark) && !shelfmark.isEmpty();
     }
 
-    @RequestMapping("/buildFullManifestation")
+    @Override
+    @GetMapping("/buildFullManifestation")
     public ResponseEntity<?> buildFullManifestation(@RequestParam("identifier") String identifier) {
         Manifestation manifestation = new Manifestation(identifier);
         extendManifestation(manifestation);
         return ResponseEntity.ok(manifestation);
     }
     
-    @RequestMapping("buildActiveManifestation")
+    @Override
+    @GetMapping("buildActiveManifestation")
     public ResponseEntity<?> buildActiveManifestation(@RequestParam("identifier") String identifier) {
         Manifestation manifestation = new Manifestation(identifier);
         extendActiveManifestation(manifestation);
         return ResponseEntity.ok(manifestation);
     }
 
-    @RequestMapping("journalprices")
+    @Override
+    @GetMapping("journalprices")
     public void getJournalPrices(@RequestParam("identifier") String identifier, @RequestParam("type") String type) throws SQLException {
         JournalPriceGetter getter = new JournalPriceGetter(jdbcTemplate);
         switch (type) {
