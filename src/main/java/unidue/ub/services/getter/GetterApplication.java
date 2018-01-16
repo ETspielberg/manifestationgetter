@@ -21,8 +21,8 @@ public class GetterApplication extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.httpBasic().disable();
 		http.authorizeRequests()
-				.anyRequest().hasIpAddress("::1").anyRequest().permitAll().and()
-				.authorizeRequests()
-				.anyRequest().authenticated().anyRequest().permitAll();
+				.anyRequest().hasIpAddress("::1")
+				.anyRequest().authenticated()
+				.anyRequest().permitAll();
 	}
 }

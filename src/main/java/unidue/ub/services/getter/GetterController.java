@@ -22,9 +22,6 @@ import unidue.ub.media.monographs.Manifestation;
 @RefreshScope
 public class GetterController implements GetterClient {
 
-    @Value("${ub.statistics.settings.url}")
-    String settingsUrl;
-
     private final
     JdbcTemplate jdbcTemplate;
 
