@@ -88,7 +88,7 @@ public class GetterController implements GetterClient {
 
         Boolean exactBoolean = "true".equals(exact);
         boolean shelfmarkNew = true;
-        buildReferenceShelfmark(identifier, exactBoolean);
+        identifier = buildReferenceShelfmark(identifier, exactBoolean);
         shelfmarks.add(identifier);
 
         ManifestationGetter manifestationgetter = new ManifestationGetter(jdbcTemplate);
@@ -128,7 +128,7 @@ public class GetterController implements GetterClient {
             shelfmarkNew = false;
             for (Manifestation manifestation : manifestations) {
                 for (String callNo : manifestation.getShelfmarks()) {
-                    buildReferenceShelfmark(callNo, exactBoolean);
+                    callNo = buildReferenceShelfmark(callNo, exactBoolean);
                     shelfmarkNew = (shelfmarkNew || isShelfmarkNew(callNo)) && pattern.matcher(callNo).find();
                     if (shelfmarkNew)
                         shelfmarks.add(callNo);
@@ -145,11 +145,12 @@ public class GetterController implements GetterClient {
         return ResponseEntity.ok(new ArrayList<>(manifestations));
     }
 
-    private static void buildReferenceShelfmark(String shelfmark, boolean exact) {
+    private static String buildReferenceShelfmark(String shelfmark, boolean exact) {
         shelfmark = shelfmark.trim();
         shelfmark = shelfmark.replaceAll("\\+\\d+", "");
         if (!exact)
             shelfmark = shelfmark.replaceAll("\\(\\d+\\)", "");
+        return shelfmark;
     }
 
     private boolean isShelfmarkNew(String shelfmark) {
