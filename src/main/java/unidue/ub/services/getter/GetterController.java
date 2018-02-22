@@ -126,12 +126,14 @@ public class GetterController implements GetterClient {
                 }
             }
             shelfmarkNew = false;
-            for (Manifestation manifestation : manifestations) {
-                for (String callNo : manifestation.getShelfmarks()) {
-                    callNo = buildReferenceShelfmark(callNo, exactBoolean);
-                    shelfmarkNew = (shelfmarkNew || isShelfmarkNew(callNo)) && pattern.matcher(callNo).find();
-                    if (shelfmarkNew)
-                        shelfmarks.add(callNo);
+            if (!exactBoolean) {
+                for (Manifestation manifestation : manifestations) {
+                    for (String callNo : manifestation.getShelfmarks()) {
+                        callNo = buildReferenceShelfmark(callNo, exactBoolean);
+                        shelfmarkNew = (shelfmarkNew || isShelfmarkNew(callNo)) && pattern.matcher(callNo).find();
+                        if (shelfmarkNew)
+                            shelfmarks.add(callNo);
+                    }
                 }
             }
 

@@ -33,8 +33,9 @@ public class ManifestationGetter {
 	
 	List<Manifestation> getDocumentsByShelfmark(String identifier, boolean exact) {
 		List<Manifestation> manifestations = new ArrayList<>();
+		boolean hasSuffix = identifier.endsWith(SUB_D);
 		String suffix = "";
-		if (identifier.endsWith(SUB_D)) {
+		if (hasSuffix) {
 			identifier = identifier.substring(0, identifier.length() - SUB_D.length());
 			suffix = SUB_D;
 		}

@@ -6,6 +6,10 @@
 
   <xsl:template match="mabxml:datensatz">
     <bibliographicInformation>
+      <alaphIdentifier>
+        <xsl:variable name="id1" select="concat('000000',@id)" />
+        <xsl:value-of select="substring($id1,string-length($id1)-8)" />
+      </alaphIdentifier>
     <authors>
   <xsl:for-each select="mabxml:feld[@nr &gt;='200' and @nr &lt;='296']|
               			mabxml:feld[@nr &gt;='100' and @nr &lt;='196']">
