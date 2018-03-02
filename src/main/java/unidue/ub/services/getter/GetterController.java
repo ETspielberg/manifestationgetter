@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
 
+import javax.swing.text.html.Option;
+
 @Controller
 @RefreshScope
 public class GetterController implements GetterClient {
@@ -78,25 +80,36 @@ public class GetterController implements GetterClient {
     @Override
     @GetMapping("/fullManifestation")
     public ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
-                                                  @RequestParam("exact") String exact) {
+                                                  @RequestParam("exact") String exact,
+                                                  @RequestParam("barcode") Optional<String> barcode) {
 
         shelfmarks = new HashSet<>();
+
         Set<String> shelfmarksQueried = new HashSet<>();
         Set<String> itemIds = new HashSet<>();
         Set<Manifestation> manifestations = new HashSet<>();
         Set<String> manifestationsQueried = new HashSet<>();
+        log.info("queried identifier: " + identifier);
 
         Boolean exactBoolean = "true".equals(exact);
-        boolean shelfmarkNew = true;
-        identifier = buildReferenceShelfmark(identifier, exactBoolean);
-        shelfmarks.add(identifier);
+        boolean shelfmarkNew;
+
 
         ManifestationGetter manifestationgetter = new ManifestationGetter(jdbcTemplate);
+        manifestationgetter.setShelfmarkRegex(shelfmarkRegex);
         ItemGetter itemGetter = new ItemGetter(jdbcTemplate);
         EventGetter eventgetter = new EventGetter(jdbcTemplate);
         MABGetter mabGetter = new MABGetter(jdbcTemplate);
 
         Pattern pattern = Pattern.compile(shelfmarkRegex);
+
+        if (barcode.isPresent())
+            shelfmarks.addAll(manifestationgetter.getShelfmarkFromBarcode(identifier));
+        else {
+            identifier = deleteItemIdentifier(identifier);
+            shelfmarks.add(identifier);
+        }
+
 
         do {
             for (String shelfmark : shelfmarks) {
@@ -127,16 +140,18 @@ public class GetterController implements GetterClient {
             }
             shelfmarkNew = false;
             if (!exactBoolean) {
+                List<String> shelfmarksInManifestations = new ArrayList<>();
                 for (Manifestation manifestation : manifestations) {
-                    for (String callNo : manifestation.getShelfmarks()) {
-                        callNo = buildReferenceShelfmark(callNo, exactBoolean);
+                    shelfmarksInManifestations.addAll(Arrays.asList(manifestation.getShelfmarks()));
+                }
+                for (String callNo : shelfmarksInManifestations) {
+                        callNo = deleteItemIdentifier(callNo);
+                        callNo = getReferenceShelfmark(callNo);
                         shelfmarkNew = (shelfmarkNew || isShelfmarkNew(callNo)) && pattern.matcher(callNo).find();
                         if (shelfmarkNew)
                             shelfmarks.add(callNo);
                     }
                 }
-            }
-
         } while (shelfmarkNew);
 
         for (Manifestation manifestation : manifestations) {
@@ -144,14 +159,19 @@ public class GetterController implements GetterClient {
             mabGetter.addSimpleMAB(manifestation);
             manifestation.buildUsergroupList();
         }
-        return ResponseEntity.ok(new ArrayList<>(manifestations));
+        List<Manifestation> manifestationsList = new ArrayList<>(manifestations);
+        Collections.sort(manifestationsList);
+        return ResponseEntity.ok(manifestationsList);
     }
 
-    private static String buildReferenceShelfmark(String shelfmark, boolean exact) {
-        shelfmark = shelfmark.trim();
-        shelfmark = shelfmark.replaceAll("\\+\\d+", "");
-        if (!exact)
-            shelfmark = shelfmark.replaceAll("\\(\\d+\\)", "");
+    private static String getReferenceShelfmark(String shelfmark) {
+        return shelfmark.replaceAll("\\(\\d+\\)", "").trim();
+    }
+
+    private static String deleteItemIdentifier(String shelfmark) {
+        log.info("shelfmark with item identifier " + shelfmark);
+        shelfmark = shelfmark.replaceAll("\\+\\d+", "").trim();
+        log.info("shelfmark without item identifier " + shelfmark);
         return shelfmark;
     }
 

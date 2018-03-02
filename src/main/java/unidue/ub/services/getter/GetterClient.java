@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.sql.SQLException;
+import java.util.Optional;
 
 public interface GetterClient {
     @GetMapping("/manifestations")
@@ -14,7 +15,8 @@ public interface GetterClient {
 
     @GetMapping("/fullManifestation")
     ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
-                                           @RequestParam("exact") String exact);
+                                           @RequestParam("exact") String exact,
+                                           @RequestParam("barcode") Optional<String> barcode);
 
     @GetMapping("/buildFullManifestation")
     ResponseEntity<?> buildFullManifestation(@RequestParam("identifier") String identifier);
