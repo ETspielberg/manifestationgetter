@@ -3,12 +3,12 @@
 <!-- Ausgabe eines MABXML Datensatzes im ISBD-Format -->
 <!-- Autor: Volker Lenhardt -->
 
-<xsl:stylesheet version="1.0" 
+<xsl:stylesheet version="2.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
   xmlns:mabxml="http://www.ddb.de/professionell/mabxml/mabxml-1.xsd"
   exclude-result-prefixes="xsl mabxml"
 >
-
+<xsl:output name="text" />
   <xsl:template match="mabxml:datensatz">
 
     <!-- 
