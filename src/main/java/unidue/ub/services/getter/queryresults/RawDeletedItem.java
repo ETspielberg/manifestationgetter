@@ -151,6 +151,9 @@ public class RawDeletedItem {
             itemStatus = "";
         Item item = new Item(itemId,collection, shelfmark, subLibrary, material,
                 itemStatus, processStatus, inventoryDate, hDate, price);
+        if (item.getSubLibrary().length() > 5) {
+            item.setSubLibrary("???");
+        }
         if ((itemStatus.equals("89") || itemStatus.equals("90") || itemStatus.equals("xx"))) {
             item.setDeletionDate(updateDate);
         }

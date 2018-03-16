@@ -126,10 +126,10 @@ class ItemGetter {
 			if (item.getItemId().length() > 15)
 				item.setItemId(item.getItemId().substring(0,15));
 			if (item.getItemStatus() == null) {
-				item.setItemStatus("");
+				item.setItemStatus("???");
 			}
 			if (item.getProcessStatus() == null) {
-				item.setProcessStatus("");
+				item.setProcessStatus("???");
 			}
 		}
 	}
