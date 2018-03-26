@@ -166,7 +166,7 @@ public class EventGetter {
             }
             boolean isCALD = false;
             if (rawEvent.getPickUpLocation() != null) {
-                isCALD = !rawEvent.getPickUpLocation().equals(item.getSublibrary());
+                isCALD = !rawEvent.getPickUpLocation().equals(item.getSubLibrary());
             }
             String eventType = isCALD ? "cald" : "request";
             String returnType = isCALD ? "caldDelivery" : "hold";
