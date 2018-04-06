@@ -153,7 +153,7 @@ public class GetterController implements GetterClient {
         } while (shelfmarkNew);
 
         for (Manifestation manifestation : manifestations) {
-            cleanUpFields(manifestation);
+            manifestation  = cleanUpFields(manifestation);
             StockEventsBuilder.buildStockEvents(manifestation);
             mabGetter.addSimpleMAB(manifestation);
             manifestation.buildUsergroupList();
@@ -242,7 +242,7 @@ public class GetterController implements GetterClient {
         manifestation.buildUsergroupList();
     }
 
-    private void cleanUpFields(Manifestation manifestation) {
+    private Manifestation cleanUpFields(Manifestation manifestation) {
         for (Item item : manifestation.getItems()) {
             if (item.getItemId().length() > 15)
                 item.setItemId(item.getItemId().substring(0,15));
@@ -253,5 +253,6 @@ public class GetterController implements GetterClient {
             if (item.getProcessStatus() == null)
                 item.setProcessStatus("???");
         }
+        return manifestation;
     }
 }
