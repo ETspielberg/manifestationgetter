@@ -107,7 +107,7 @@ class ItemGetter {
 		for (Item item : items) {
 			if (item.getItemId().length() > 15)
 				item.setItemId(item.getItemId().substring(0,15));
-			if (item.getSubLibrary().length() > 5)
+			if (item.getSubLibrary().length() > 5 || item.getSubLibrary().equals("") || item.getSubLibrary() == null || item.getSubLibrary().length() < 3)
 				item.setSubLibrary("???");
 			if (item.getItemStatus() == null)
 				item.setItemStatus("???");
