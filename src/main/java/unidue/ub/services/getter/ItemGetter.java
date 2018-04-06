@@ -76,6 +76,7 @@ class ItemGetter {
 				}
 			}
 		}
+		cleanUpFields();
 		return items;
 	}
 
@@ -102,6 +103,19 @@ class ItemGetter {
 			/* TODO: find an example for events with item 'xx' and see the result in the query, build the corresponding analysis here.*/
 		}
 		return item;
+	}
+
+	private void cleanUpFields() {
+		for (Item item : items) {
+			if (item.getItemId().length() > 15)
+				item.setItemId(item.getItemId().substring(0,15));
+			if (item.getSubLibrary().length() > 5 || item.getSubLibrary().equals("") || item.getSubLibrary() == null || item.getSubLibrary().length() < 3)
+				item.setSubLibrary("???");
+			if (item.getItemStatus() == null)
+				item.setItemStatus("???");
+			if (item.getProcessStatus() == null)
+				item.setProcessStatus("???");
+		}
 	}
 
 }

@@ -161,7 +161,7 @@ public class EventGetter {
         for (RawRequestEvent rawEvent : rawEvents) {
             Item item = manifestation.getItem(rawEvent.getItemId());
             if (item == null) {
-                item = new Item("", rawEvent.getItemId(), "", "", "", "");
+                item = new Item(rawEvent.getItemId(), "???" , "", "", "", "");
                 manifestation.addItem(item);
             }
             boolean isCALD = false;
@@ -196,7 +196,7 @@ public class EventGetter {
         for (RawLoanEvent rawEvent : rawEvents) {
             Item item = manifestation.getItem(rawEvent.getItemId());
             if (item == null) {
-                item = new Item("", rawEvent.getItemId(), "", "", "", "");
+                item = new Item(rawEvent.getItemId(), "???", "", "", "", "");
                 manifestation.addItem(item);
             }
             Event loanEvent = new Event(rawEvent.getItemId(), rawEvent.getLoanDate(),
