@@ -77,24 +77,6 @@ class ItemGetter {
 		cleanUpFields(items);
 		return items;
 	}
-	
-	List<Item> getItemsByBarcode(String identifier) {
-		List<Item> items = new ArrayList<>();
-		items.addAll(jdbcTemplate.query(getItemsByBarCode, new Object[]{identifier},(rs, rowNum) ->
-				new Item(rs.getString("z30_rec_key"),
-						rs.getString("z30_collection"),
-						rs.getString("z30_call_no"),
-						rs.getString("z30_sub_library"),
-						rs.getString("z30_material"),
-						rs.getString("z30_item_status"),
-						rs.getString("z30_item_process_status"),
-						rs.getString("z30_inventory_number_date"),
-						rs.getString("z30_update_date"),
-						rs.getString("z30_price")
-				)));
-		cleanUpFields(items);
-		return items;
-	}
 
 	Item getItemByItemId(String ItemId) {
 		List<RawDeletedItem> rawDeletedItems = jdbcTemplate.query(getDeletedItem, new Object[]{ItemId + "%"},(rs, rowNum) ->
@@ -125,12 +107,12 @@ class ItemGetter {
 		for (Item item : items) {
 			if (item.getItemId().length() > 15)
 				item.setItemId(item.getItemId().substring(0,15));
-			if (item.getItemStatus() == null) {
+			if (item.getSubLibrary().length() > 5)
+				item.setSubLibrary("???");
+			if (item.getItemStatus() == null)
 				item.setItemStatus("???");
-			}
-			if (item.getProcessStatus() == null) {
+			if (item.getProcessStatus() == null)
 				item.setProcessStatus("???");
-			}
 		}
 	}
 
