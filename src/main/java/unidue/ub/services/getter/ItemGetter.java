@@ -24,8 +24,10 @@ class ItemGetter {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
+	private List<Item> items;
+
 	List<Item> getItemsByDocNumber(String identifier) {
-		List<Item> items = new ArrayList<>();
+		items = new ArrayList<>();
 		items.addAll(jdbcTemplate.query(getCurrentItems, new Object[]{identifier + "%"},(rs, rowNum) ->
 		new Item(rs.getString("z30_rec_key"),
 				rs.getString("z30_collection"), 
@@ -74,7 +76,7 @@ class ItemGetter {
 				}
 			}
 		}
-		cleanUpFields(items);
+		cleanUpFields();
 		return items;
 	}
 
@@ -103,7 +105,7 @@ class ItemGetter {
 		return item;
 	}
 
-	private void cleanUpFields(List<Item> items) {
+	private void cleanUpFields() {
 		for (Item item : items) {
 			if (item.getItemId().length() > 15)
 				item.setItemId(item.getItemId().substring(0,15));
