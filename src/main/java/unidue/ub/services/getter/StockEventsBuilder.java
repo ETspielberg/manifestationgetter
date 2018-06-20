@@ -21,7 +21,7 @@ class StockEventsBuilder {
 
 	private static final String LATE_IN_THE_EVENING = "2000";
 
-	private static final String BY_LIBRARY_STAFF = "05";
+	private static final String BY_LIBRARY_STAFF = "12";
 
 	private static String DATE_OF_ANCIENT_INVENTORY = "20000101";
 
