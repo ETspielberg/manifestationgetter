@@ -177,7 +177,7 @@ public class EventGetter {
             if (isClosed) {
                 Event holdEvent = new Event(rawEvent.getItemId(), rawEvent.getHoldDate(),
                         rawEvent.getOpenHour(), returnType, "", counter--);
-                if (holdEvent.getTime() == 0)
+                if (holdEvent.getTime() == 0 || holdEvent.getTime() == requestEvent.getTime())
                     holdEvent.setTime(requestEvent.getTime() + 1);
                 long threeDays = 259200000L;
                 if (isCALD) {
@@ -186,7 +186,6 @@ public class EventGetter {
                 requestEvent.setEndEvent(holdEvent);
                 holdEvent.setItem(item);
             }
-
             requestEvent.calculateDuration();
             item.addEvent(requestEvent);
         }
@@ -205,7 +204,7 @@ public class EventGetter {
             if (isClosed) {
                 Event returnEvent = new Event(rawEvent.getItemId(), rawEvent.getReturnDate(),
                         rawEvent.getReturnHour(), "return", rawEvent.getBorrowerStatus(), counter--);
-                if (returnEvent.getTime() == 0) returnEvent.setTime(loanEvent.getTime() + 1);
+                if (returnEvent.getTime() == 0 || returnEvent.getTime() == loanEvent.getTime()) returnEvent.setTime(loanEvent.getTime() + 1);
                 returnEvent.setItem(item);
                 loanEvent.setEndEvent(returnEvent);
             }
