@@ -12,7 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import unidue.ub.media.monographs.BibliographicInformation;
 import unidue.ub.media.monographs.Manifestation;
-import unidue.ub.services.getter.queryresults.MabBlob;
+import unidue.ub.services.getter.model.MabBlob;
 
 import static unidue.ub.media.tools.MonographTools.buildBibligraphicInformationFromMABXML;
 

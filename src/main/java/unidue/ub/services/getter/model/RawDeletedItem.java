@@ -1,4 +1,4 @@
-package unidue.ub.services.getter.queryresults;
+package unidue.ub.services.getter.model;
 
 import unidue.ub.media.monographs.Item;
 

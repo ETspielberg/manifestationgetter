@@ -1,7 +1,7 @@
 package unidue.ub.services.getter;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import unidue.ub.services.getter.queryresults.RawJournalprices;
+import unidue.ub.services.getter.model.RawJournalprices;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

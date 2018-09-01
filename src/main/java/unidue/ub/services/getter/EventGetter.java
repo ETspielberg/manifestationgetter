@@ -8,8 +8,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import unidue.ub.media.monographs.Event;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
-import unidue.ub.services.getter.queryresults.RawLoanEvent;
-import unidue.ub.services.getter.queryresults.RawRequestEvent;
+import unidue.ub.services.getter.model.RawLoanEvent;
+import unidue.ub.services.getter.model.RawRequestEvent;
 
 public class EventGetter {
 

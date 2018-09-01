@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import unidue.ub.media.monographs.Item;
-import unidue.ub.services.getter.queryresults.RawDeletedItem;
+import unidue.ub.services.getter.model.RawDeletedItem;
 
 class ItemGetter {
 	
