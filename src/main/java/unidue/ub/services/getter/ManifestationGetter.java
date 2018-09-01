@@ -39,7 +39,6 @@ public class ManifestationGetter {
             suffix = SUB_D;
         }
         identifier = identifier.toUpperCase();
-        log.info(identifier);
         Pattern pattern = Pattern.compile(shelfmarkRegex);
         Matcher shelfmarkMatcher =  pattern.matcher(identifier);
         boolean isRegularShelfmark = shelfmarkMatcher.find();

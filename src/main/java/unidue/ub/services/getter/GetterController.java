@@ -43,6 +43,7 @@ public class GetterController implements GetterClient {
                                                @RequestParam("mode") String mode) {
 
         ManifestationGetter manifestationgetter = new ManifestationGetter(jdbcTemplate);
+        manifestationgetter.setShelfmarkRegex(shelfmarkRegex);
         List<Manifestation> manifestations = new ArrayList<>();
         Boolean exactBoolean = "true".equals(exact);
         switch (mode) {
@@ -105,7 +106,10 @@ public class GetterController implements GetterClient {
             shelfmarks.addAll(manifestationgetter.getShelfmarkFromBarcode(identifier));
         else {
             identifier = deleteItemIdentifier(identifier);
-            shelfmarks.add(identifier);
+            if (identifier.contains("; ")) {
+                shelfmarks.addAll(Arrays.asList(identifier.split("; ")));
+            } else
+                shelfmarks.add(identifier);
         }
 
 
@@ -167,9 +171,7 @@ public class GetterController implements GetterClient {
     }
 
     private static String deleteItemIdentifier(String shelfmark) {
-        log.info("shelfmark with item identifier " + shelfmark);
         shelfmark = shelfmark.replaceAll("\\+\\d+", "").trim();
-        log.info("shelfmark without item identifier " + shelfmark);
         return shelfmark;
     }
 
