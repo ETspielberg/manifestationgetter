@@ -32,6 +32,9 @@ public class GetterController implements GetterClient {
     @Value("${ub.statistics.shelfmark.regex}")
     String shelfmarkRegex;
 
+    @Value("${ub.statistics.collections.ignored}")
+    String ignoredCollections;
+
     @Autowired
     public GetterController(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -128,11 +131,14 @@ public class GetterController implements GetterClient {
                     if (manifestationsQueried.contains(foundManifestation.getTitleID()))
                         continue;
                     List<Item> items = itemGetter.getItemsByDocNumber(foundManifestation.getTitleID());
-                    for (Item item : items)
-                        if (!itemIds.contains(item.getItemId())) {
-                            foundManifestation.addItem(item);
-                            itemIds.add(item.getItemId());
-                        }
+                    for (Item item : items) {
+                        if (itemIds.contains(item.getItemId()))
+                            continue;
+                        if (ignoredCollections.contains(item.getCollection()))
+                            continue;
+                        foundManifestation.addItem(item);
+                        itemIds.add(item.getItemId());
+                    }
                     eventgetter.addEventsToManifestation(foundManifestation);
                     manifestations.add(foundManifestation);
 
