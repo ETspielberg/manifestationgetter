@@ -1,14 +1,16 @@
-package unidue.ub.services.getter;
+package unidue.ub.services.getter.getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import org.springframework.stereotype.Component;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.services.getter.model.RawDeletedItem;
 
-class ItemGetter {
+@Component
+public class ItemGetter {
 	
 	private JdbcTemplate jdbcTemplate;
 	
@@ -18,13 +20,13 @@ class ItemGetter {
 
 	private final String getDeletedItem = "select z30h_call_no, z30h_rec_key, z30h_price, z30h_collection, z30h_material, z30h_sub_library, z30h_item_status, z30h_item_process_status, z30h_inventory_number_date, z30h_h_date, z30h_update_date, z30h_h_reason_type from edu50.z30h where z30h_rec_key like ?";
 
-	ItemGetter(JdbcTemplate jdbcTemplate) {
+	public ItemGetter(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
 	private List<Item> items;
 
-	List<Item> getItemsByDocNumber(String identifier) {
+	public List<Item> getItemsByDocNumber(String identifier) {
 		items = new ArrayList<>();
 		items.addAll(jdbcTemplate.query(getCurrentItems, new Object[]{identifier + "%"},(rs, rowNum) ->
 		new Item(rs.getString("z30_rec_key"),
@@ -79,7 +81,7 @@ class ItemGetter {
 		return items;
 	}
 
-	Item getItemByItemId(String ItemId) {
+	public Item getItemByItemId(String ItemId) {
 		List<RawDeletedItem> rawDeletedItems = jdbcTemplate.query(getDeletedItem, new Object[]{ItemId + "%"},(rs, rowNum) ->
 				new RawDeletedItem(rs.getString("z30h_rec_key"),
 						rs.getString("z30h_collection"),

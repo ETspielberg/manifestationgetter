@@ -15,7 +15,7 @@ import java.util.List;
  * @author Eike Spielberg, Frank L\u00FCtzenkirchen
  * @version 1
  */
-class StockEventsBuilder {
+public class Utilities {
 
 	private static final String EARLY_IN_THE_MORNING = "0630";
 
@@ -31,7 +31,7 @@ class StockEventsBuilder {
 	 * @param manifestation
 	 *            the document holding the items
 	 */
-	static void buildStockEvents(Manifestation manifestation) {
+	public static void buildStockEvents(Manifestation manifestation) {
 		setLatestInventoryDate(manifestation.getItems());
 
 		// go through all items and set the inventory and deletion dates. In
@@ -134,5 +134,4 @@ class StockEventsBuilder {
 			earliestPossibleDeletionDate = String.valueOf(Collections.max(dates));
 		return earliestPossibleDeletionDate;
 	}
-
 }

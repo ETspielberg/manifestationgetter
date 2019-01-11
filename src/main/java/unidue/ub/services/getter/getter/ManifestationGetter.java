@@ -1,8 +1,9 @@
-package unidue.ub.services.getter;
+package unidue.ub.services.getter.getter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 import unidue.ub.media.monographs.Manifestation;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Component
 public class ManifestationGetter {
 
     private final String orderBy = "order by titleId";
@@ -22,11 +24,11 @@ public class ManifestationGetter {
 
     private final Logger log = LoggerFactory.getLogger(ManifestationGetter.class);
 
-    ManifestationGetter(JdbcTemplate jdbcTemplate) {
+    public ManifestationGetter(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    List<Manifestation> getDocumentsByShelfmark(String identifier, boolean exact) {
+    public List<Manifestation> getDocumentsByShelfmark(String identifier, boolean exact) {
         String select = "select distinct substr(z30_rec_key,1,9) as titleId from edu50.z30 where ( z30_call_no = ?) ";
         String like = "or ( z30_call_no like ?) ";
 
@@ -74,14 +76,14 @@ public class ManifestationGetter {
         return manifestations;
     }
 
-    List<Manifestation> getDocumentsByOpenRequests() {
+    public List<Manifestation> getDocumentsByOpenRequests() {
         String getByOpenRequests = "select distinct substr(z37_rec_key,1,9) as titleId from edu50.z37 where z37_pickup_location != 'ILLDT' and (z37_end_request_date >(select to_char(sysdate, 'YYYYMMDD') from dual))";
         List<Manifestation> manifestations = new ArrayList<>();
         manifestations.addAll(jdbcTemplate.query(getByOpenRequests, new Object[]{}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
         return manifestations;
     }
 
-    List<Manifestation> getManifestationsByBarcode(String barcode) {
+    public List<Manifestation> getManifestationsByBarcode(String barcode) {
         String getByBarcode = "select substr(z30_rec_key,1,9) as titleId from edu50.z30 where (z30_barcode like ?)";
         log.info("querying barcode with " + getByBarcode + " for " + barcode.toUpperCase().trim() + "%");
         List<Manifestation> manifestations = new ArrayList<>();
@@ -89,7 +91,7 @@ public class ManifestationGetter {
         return manifestations;
     }
 
-    List<String> getShelfmarkFromBarcode(String barcode) {
+    public List<String> getShelfmarkFromBarcode(String barcode) {
         String getSehlfmarkByBarcode = "select z30_call_no, z30_barcode from edu50.z30 where (z30_barcode like ?)";
         List<String> shelfmarks = new ArrayList<>();
         shelfmarks.addAll(jdbcTemplate.query(getSehlfmarkByBarcode, new Object[]{barcode.toUpperCase().trim() + "%"}, (rs, rowNum) -> rs.getString("z30_call_no")));
@@ -97,7 +99,7 @@ public class ManifestationGetter {
     }
 
 
-    List<Manifestation> getDocumentsByEtat(String identifier) {
+    public List<Manifestation> getDocumentsByEtat(String identifier) {
         String getEtat = "select distinct substr(z75_rec_key,1,9) as titleId from edu50.z601, edu50.z75 where z601_rec_key_2 = z75_rec_key_2 and z601_rec_key like ? and z601_type = 'INV'";
         String query = getEtat + orderBy;
         List<Manifestation> manifestations = new ArrayList<>();
@@ -105,7 +107,7 @@ public class ManifestationGetter {
         return manifestations;
     }
 
-    List<Manifestation> getDocumentsByNotation(String identifier) {
+    public List<Manifestation> getDocumentsByNotation(String identifier) {
         String getByNotation = "select distinct substr(z30_rec_key,1,9) as titleId from edu50.z30 where ( z30_call_no like ?)";
         List<Manifestation> manifestations = new ArrayList<>();
         manifestations.addAll(jdbcTemplate.query(getByNotation, new Object[]{identifier + "%"}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));

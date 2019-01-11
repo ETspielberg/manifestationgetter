@@ -1,4 +1,4 @@
-package unidue.ub.services.getter;
+package unidue.ub.services.getter.getter;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -10,6 +10,7 @@ import org.jdom2.Namespace;
 import org.jdom2.Verifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import org.springframework.stereotype.Component;
 import unidue.ub.media.monographs.BibliographicInformation;
 import unidue.ub.media.monographs.Manifestation;
 import unidue.ub.services.getter.model.MabBlob;
@@ -22,6 +23,7 @@ import static unidue.ub.media.tools.MonographTools.buildBibligraphicInformationF
  * @author Frank L\u00FCtzenkirchen, Eike Spielberg
  * @version 1
  */
+@Component
 public class MABGetter {
 
 	private JdbcTemplate jdbcTemplate;
@@ -47,7 +49,7 @@ public class MABGetter {
 	 *            an <code>JdbcTemplate</code>-object
 	 */
 
-	MABGetter(JdbcTemplate jdbcTemplate) {
+	public MABGetter(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
@@ -58,12 +60,12 @@ public class MABGetter {
 	 * @param manifestation
 	 *            the document the bibliographics information are retrieved for
 	 */
-	void addSimpleMAB(Manifestation manifestation) {
+	public void addSimpleMAB(Manifestation manifestation) {
 		BibliographicInformation bibliographicInformation = getSimpleMab(manifestation.getTitleID());
 		manifestation.setBibliographicInformation(bibliographicInformation);
 	}
 
-	BibliographicInformation getSimpleMab(String identifier) {
+	private BibliographicInformation getSimpleMab(String identifier) {
 		BibliographicInformation bibliographicInformation = new BibliographicInformation();
 		List<MabBlob> mabBlobs = new ArrayList<>();
 		List<String> recKeys = jdbcTemplate.query(sqlRecKey,
@@ -88,7 +90,7 @@ public class MABGetter {
 	 * @param manifestation
 	 *            the document the bibliographics information are retrieved for
 	 */
-	public void addFullMAB(Manifestation manifestation) {
+	private void addFullMAB(Manifestation manifestation) {
 		getSuper = false;
 		BibliographicInformation bibliographicInformation = new BibliographicInformation();
 		List<MabBlob> mabBlobs = new ArrayList<>();

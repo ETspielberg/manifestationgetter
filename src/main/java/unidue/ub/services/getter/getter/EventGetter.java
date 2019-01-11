@@ -1,16 +1,18 @@
-package unidue.ub.services.getter;
+package unidue.ub.services.getter.getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import org.springframework.stereotype.Component;
 import unidue.ub.media.monographs.Event;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
 import unidue.ub.services.getter.model.RawLoanEvent;
 import unidue.ub.services.getter.model.RawRequestEvent;
 
+@Component
 public class EventGetter {
 
     private JdbcTemplate jdbcTemplate;
@@ -27,11 +29,11 @@ public class EventGetter {
 
     private final String getAllOpenRequests = "select z37_rec_key, z37_open_date, z37_open_hour, z37_pickup_location from edu50.z37";
 
-    EventGetter(JdbcTemplate jdbcTemplate) {
+    public EventGetter(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    List<Event> getLoansByDocNumber(String identifier) {
+    public List<Event> getLoansByDocNumber(String identifier) {
         List<RawLoanEvent> rawClosedLoanEvents = new ArrayList<>();
         List<RawLoanEvent> rawOpenLoanEvents = new ArrayList<>();
         List<Event> events = new ArrayList<>();
@@ -62,7 +64,7 @@ public class EventGetter {
         return events;
     }
 
-    List<Event> getRequestsByDocNumber(String identifier) {
+    public List<Event> getRequestsByDocNumber(String identifier) {
         List<RawRequestEvent> rawClosedRequestEvents = new ArrayList<>();
         List<RawRequestEvent> rawOpenRequestEvents = new ArrayList<>();
         rawClosedRequestEvents.addAll(jdbcTemplate.query(getClosedRequests, new Object[]{identifier + "%"},
@@ -89,7 +91,7 @@ public class EventGetter {
         return events;
     }
 
-    List<Event> getOpenRequests() {
+    public List<Event> getOpenRequests() {
         List<RawRequestEvent> rawOpenRequestEvents = new ArrayList<>();
         rawOpenRequestEvents.addAll(jdbcTemplate.query(getAllOpenRequests,
                 (rs, rowNum) -> new RawRequestEvent(rs.getString("z37_rec_key"), rs.getString("z37_open_date"),
@@ -102,7 +104,7 @@ public class EventGetter {
         return events;
     }
 
-    void addEventsToManifestation(Manifestation manifestation) {
+    public void addEventsToManifestation(Manifestation manifestation) {
         // prepare all raw events
         List<RawLoanEvent> rawClosedLoanEvents = new ArrayList<>();
         List<RawLoanEvent> rawOpenLoanEvents = new ArrayList<>();
@@ -137,7 +139,7 @@ public class EventGetter {
         addRawRequestEventToManifestation(rawOpenRequestEvents,manifestation,false);
     }
 
-    void addAcitveEventsToManifestation(Manifestation manifestation) {
+    public void addAcitveEventsToManifestation(Manifestation manifestation) {
         // prepare all raw events
         List<RawLoanEvent> rawOpenLoanEvents = new ArrayList<>();
         List<RawRequestEvent> rawOpenRequestEvents = new ArrayList<>();
