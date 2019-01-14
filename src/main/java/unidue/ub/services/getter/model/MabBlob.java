@@ -2,9 +2,9 @@ package unidue.ub.services.getter.model;
 
 public class MabBlob {
 	
-	byte[] mabBlob;
+	private byte[] mabBlob;
 	
-	int mabLength;
+	private int mabLength;
 	
 	public MabBlob(byte[] mabBlob, int mabLength) {
 		this.mabBlob = mabBlob;

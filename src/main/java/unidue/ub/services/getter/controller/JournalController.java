@@ -47,7 +47,7 @@ public class JournalController {
         return ResponseEntity.ok(contracts);
     }
 
-    @GetMapping("jornalcontractByIssn/{issn}")
+    @GetMapping("journalcontractByIssn/{issn}")
     public ResponseEntity<?> getOrdersForIssn(@PathVariable String issn) {
         log.info("retrieving orders and invoices for ISSN " + issn);
         List<Contract> contracts = new ArrayList<>();

@@ -78,40 +78,30 @@ public class ManifestationGetter {
 
     public List<Manifestation> getDocumentsByOpenRequests() {
         String getByOpenRequests = "select distinct substr(z37_rec_key,1,9) as titleId from edu50.z37 where z37_pickup_location != 'ILLDT' and (z37_end_request_date >(select to_char(sysdate, 'YYYYMMDD') from dual))";
-        List<Manifestation> manifestations = new ArrayList<>();
-        manifestations.addAll(jdbcTemplate.query(getByOpenRequests, new Object[]{}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
-        return manifestations;
+        return new ArrayList<>(jdbcTemplate.query(getByOpenRequests, new Object[]{}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
     }
 
     public List<Manifestation> getManifestationsByBarcode(String barcode) {
         String getByBarcode = "select substr(z30_rec_key,1,9) as titleId from edu50.z30 where (z30_barcode like ?)";
         log.info("querying barcode with " + getByBarcode + " for " + barcode.toUpperCase().trim() + "%");
-        List<Manifestation> manifestations = new ArrayList<>();
-        manifestations.addAll(jdbcTemplate.query(getByBarcode, new Object[]{barcode.toUpperCase().trim() + "%"}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
-        return manifestations;
+        return new ArrayList<>(jdbcTemplate.query(getByBarcode, new Object[]{barcode.toUpperCase().trim() + "%"}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
     }
 
     public List<String> getShelfmarkFromBarcode(String barcode) {
         String getSehlfmarkByBarcode = "select z30_call_no, z30_barcode from edu50.z30 where (z30_barcode like ?)";
-        List<String> shelfmarks = new ArrayList<>();
-        shelfmarks.addAll(jdbcTemplate.query(getSehlfmarkByBarcode, new Object[]{barcode.toUpperCase().trim() + "%"}, (rs, rowNum) -> rs.getString("z30_call_no")));
-        return shelfmarks;
+        return new ArrayList<>(jdbcTemplate.query(getSehlfmarkByBarcode, new Object[]{barcode.toUpperCase().trim() + "%"}, (rs, rowNum) -> rs.getString("z30_call_no")));
     }
 
 
     public List<Manifestation> getDocumentsByEtat(String identifier) {
         String getEtat = "select distinct substr(z75_rec_key,1,9) as titleId from edu50.z601, edu50.z75 where z601_rec_key_2 = z75_rec_key_2 and z601_rec_key like ? and z601_type = 'INV'";
         String query = getEtat + orderBy;
-        List<Manifestation> manifestations = new ArrayList<>();
-        manifestations.addAll(jdbcTemplate.query(query, new Object[]{identifier + "%"}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
-        return manifestations;
+        return new ArrayList<>(jdbcTemplate.query(query, new Object[]{identifier + "%"}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
     }
 
     public List<Manifestation> getDocumentsByNotation(String identifier) {
         String getByNotation = "select distinct substr(z30_rec_key,1,9) as titleId from edu50.z30 where ( z30_call_no like ?)";
-        List<Manifestation> manifestations = new ArrayList<>();
-        manifestations.addAll(jdbcTemplate.query(getByNotation, new Object[]{identifier + "%"}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
-        return manifestations;
+        return new ArrayList<>(jdbcTemplate.query(getByNotation, new Object[]{identifier + "%"}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
     }
 
     public void setShelfmarkRegex(String shelfmarkRegex) {

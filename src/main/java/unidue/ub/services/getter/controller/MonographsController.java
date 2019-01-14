@@ -101,11 +101,14 @@ public class MonographsController {
 
         Pattern pattern = Pattern.compile(shelfmarkRegex);
 
-        if (barcode != null)
+        log.info(barcode);
+
+        if (barcode != null) {
             if (!barcode.isEmpty())
                 shelfmarks.addAll(manifestationGetter.getShelfmarkFromBarcode(identifier));
-        else {
+        } else {
             identifier = deleteItemIdentifier(identifier);
+            log.info("reduced shelfmark: " + identifier);
             if (identifier.contains(";")) {
                 String[] individualIdentifiers = identifier.split(";");
                 for (String individualIdentifier : individualIdentifiers)
@@ -115,6 +118,7 @@ public class MonographsController {
             } else
                 shelfmarks.add(identifier.trim());
         }
+        log.info(shelfmarks.toString());
         do {
             for (String shelfmark : shelfmarks) {
                 log.info("collecting shelfmark " + shelfmark);
