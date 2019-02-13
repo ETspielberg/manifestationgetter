@@ -86,6 +86,7 @@ public class MonographsController {
     @GetMapping("/fullManifestation")
     public ResponseEntity<?> getFullManifestation(@RequestParam("identifier") String identifier,
                                                   @RequestParam("exact") String exact,
+                                                  @RequestParam(value = "collection", required = false) String collection,
                                                   @RequestParam(value = "barcode", required = false) String barcode) {
 
         shelfmarks = new HashSet<>();
@@ -106,6 +107,8 @@ public class MonographsController {
         if (barcode != null) {
             if (!barcode.isEmpty())
                 shelfmarks.addAll(manifestationGetter.getShelfmarkFromBarcode(identifier));
+        } else if (collection != null) {
+                shelfmarks.addAll(manifestationGetter.getShelfmarksByCollection(identifier));
         } else {
             identifier = deleteItemIdentifier(identifier);
             log.info("reduced shelfmark: " + identifier);
@@ -184,6 +187,45 @@ public class MonographsController {
         Manifestation manifestation = new Manifestation(identifier);
         extendManifestation(manifestation, true);
         return ResponseEntity.ok(manifestation);
+    }
+
+    @GetMapping("getItemList")
+    public ResponseEntity<?> getItemList(@RequestParam("identifier") String identifier,
+                                         @RequestParam(value = "collections", required = false) String collections,
+                                         @RequestParam(value = "mode", required = false) String mode) {
+        List<Item> items = new ArrayList<>();
+        switch (mode) {
+            case "barcode": {
+                log.info("retrieving items by barcode" );
+                items = itemGetter.getItemsByBarcode(identifier);
+                break;
+            }
+            case "shelfmark": {
+                log.info("retrieving items by shelfmark with collection filter " + collections);
+                items = filterItemList(itemGetter.getItemsByShelfmark(identifier), collections);
+                break;
+            }
+            case "adm": {
+                log.info("retrieving items by ADM with collection filter " + collections);
+                items = filterItemList(itemGetter.getItemsByDocNumber(identifier), collections);
+                break;
+            }
+        }
+        return ResponseEntity.ok(items);
+    }
+
+    private List<Item> filterItemList(List<Item> unfilteredItems, String collections) {
+        if (collections == null) {
+            log.info("no collections filter given, returning original list");
+            return unfilteredItems;
+        }
+        List<Item> filteredItems = new ArrayList<>();
+        for (Item item: unfilteredItems) {
+            log.info("checking, whether collection " + item.getCollection() + " is in filter " + collections);
+            if (collections.contains(item.getCollection()))
+                filteredItems.add(item);
+        }
+        return filteredItems;
     }
 
     private void extendManifestation(Manifestation manifestation, Boolean active) {

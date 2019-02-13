@@ -81,6 +81,11 @@ public class ManifestationGetter {
         return new ArrayList<>(jdbcTemplate.query(getByOpenRequests, new Object[]{}, (rs, rowNum) -> new Manifestation(rs.getString("titleId"))));
     }
 
+    public List<String> getShelfmarksByCollection(String collection) {
+        String query = "select z30_call_no, z30_collection from edu50.z30 where (z30_collection like ?)";
+        return new ArrayList<>(jdbcTemplate.query(query, new Object[]{collection.toUpperCase().trim() + "%"}, (rs, rowNum) -> rs.getString("z30_call_no")));
+    }
+
     public List<Manifestation> getManifestationsByBarcode(String barcode) {
         String getByBarcode = "select substr(z30_rec_key,1,9) as titleId from edu50.z30 where (z30_barcode like ?)";
         log.info("querying barcode with " + getByBarcode + " for " + barcode.toUpperCase().trim() + "%");
