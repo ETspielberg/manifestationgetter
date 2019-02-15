@@ -66,7 +66,7 @@ public class ItemGetter {
 	}
 
 	public List<Item> getItemsByBarcode(String barcode) {
-		String getCurrentItems = "select z30_call_no, z30_rec_key, z30_price, z30_collection, z30_material, z30_sub_library, z30_item_status, z30_item_process_status, z30_update_date, z30_inventory_number_date, z30_note_opac from edu50.z30 where z30_barcode like ?";
+		String getCurrentItems = "select z30_call_no, z30_rec_key, z30_price, z30_collection, z30_material, z30_sub_library, z30_item_status, z30_item_process_status, z30_update_date, z30_inventory_number_date, z30_note_opac, z30_barcode from edu50.z30 where z30_barcode like ?";
 		return retrieveItems(getCurrentItems, barcode);
 	}
 
@@ -83,7 +83,8 @@ public class ItemGetter {
 							rs.getString("z30_inventory_number_date"),
 							rs.getString("z30_update_date"),
 							rs.getString("z30_price"),
-							rs.getString("z30_note_opac")
+							rs.getString("z30_note_opac"),
+							rs.getString("z30_barcode")
 					)));
 			for (Item item : items) {
 				if (!(item.getItemStatus().equals("89") || item.getItemStatus().equals("90") || item.getItemStatus().equals("xx"))) {
