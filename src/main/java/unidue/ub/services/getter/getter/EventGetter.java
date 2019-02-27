@@ -139,7 +139,7 @@ public class EventGetter {
         addRawRequestEventToManifestation(rawOpenRequestEvents,manifestation,false);
     }
 
-    public void addAcitveEventsToManifestation(Manifestation manifestation) {
+    public void addActiveEventsToManifestation(Manifestation manifestation) {
         // prepare all raw events
         List<RawLoanEvent> rawOpenLoanEvents = new ArrayList<>();
         List<RawRequestEvent> rawOpenRequestEvents = new ArrayList<>();

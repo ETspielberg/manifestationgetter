@@ -8,6 +8,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
@@ -30,6 +31,12 @@ public class MonographsController {
 
     @Value("${ub.statistics.collections.ignored}")
     String ignoredCollections;
+
+    @Value("${libintel.primo.search.url}")
+    String primoUrl;
+
+    @Value("${libintel.primo.api.key}")
+    String primoApiKey;
 
     private final ManifestationGetter manifestationGetter;
     private final EventGetter eventGetter;
@@ -240,7 +247,7 @@ public class MonographsController {
             itemIds.add(item.getItemId());
         }
         if (active) {
-            eventGetter.addAcitveEventsToManifestation(manifestation);
+            eventGetter.addActiveEventsToManifestation(manifestation);
         } else {
             eventGetter.addEventsToManifestation(manifestation);
             Utilities.buildStockEvents(manifestation);
@@ -249,4 +256,9 @@ public class MonographsController {
         mabGetter.addSimpleMAB(manifestation);
     }
 
+    @GetMapping("getPrimoResponse/{identifier}")
+    public ResponseEntity<?> getIdentifiers(@PathVariable("identifier") String identifier) {
+        PrimoGetter primoGetter = new PrimoGetter(primoUrl, primoApiKey);
+        return ResponseEntity.ok(primoGetter.getPrimoResponse(identifier));
+    }
 }
