@@ -66,7 +66,8 @@ public class PrimoGetter {
                     String type = linkContext.read("$['displayLabel");
                     if ("thumbnail".equals(type))
                         primoData.setLinkThumbnail(linkContext.read("$['linkURL']"));
-
+                    if ("$$Elinktorsrc".equals(type))
+                        primoData.setFuiltextLink(linkContext.read("$['linkURL']"));
                 }
                 primoResponse.addIsbnRecordIdRelation(primoData);
             }

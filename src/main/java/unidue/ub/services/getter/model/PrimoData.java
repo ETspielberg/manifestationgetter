@@ -22,6 +22,16 @@ public class PrimoData {
 
     private String linkThumbnail;
 
+    private String fuiltextLink;
+
+    public String getFuiltextLink() {
+        return fuiltextLink;
+    }
+
+    public void setFuiltextLink(String fuiltextLink) {
+        this.fuiltextLink = fuiltextLink;
+    }
+
     public String getLinkThumbnail() {
         return linkThumbnail;
     }
