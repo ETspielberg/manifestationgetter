@@ -16,6 +16,16 @@ public class PrimoData {
 
     private String year;
 
+    private String format;
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
     public String getType() {return type;}
 
     public String getRecordId() {

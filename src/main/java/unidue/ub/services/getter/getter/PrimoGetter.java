@@ -2,8 +2,6 @@ package unidue.ub.services.getter.getter;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -18,22 +16,6 @@ public class PrimoGetter {
 
     private final String primoApiKey;
 
-    private final Logger log = LoggerFactory.getLogger(PrimoGetter.class);
-
-    private final String basePath = "$['docs'][*]['pnx']";
-
-    private final String sourcetypePath = basePath + "['delivery']['delcategory'][*]";
-
-    private final String isbnPath = basePath + "['display']['identifier'][*]";
-
-    private final String recordIdPath = basePath + "['control']['sourcerecordid'][*]";
-
-    private final String titlePath = basePath + "['display']['title'][*]";
-
-    private final String authorsPath = basePath + "['display']['lds07'][*]";
-
-    private final String editionPath = basePath + "['display']['edition'][*]";
-
     public PrimoGetter(String primoUrl, String primoApiKey) {
         this.primoUrl = primoUrl;
         this.primoApiKey = primoApiKey;
@@ -44,27 +26,42 @@ public class PrimoGetter {
         String response = getResponseForJson(identifier);
         if (!"".equals(response)) {
             DocumentContext jsonContext = JsonPath.parse(response);
-            List<String> sourceIds = jsonContext.read(basePath + "['display']['identifier'][*]");
-            List<String> sourcetypes = jsonContext.read(basePath + "['delivery']['delcategory'][*]");
-            List<String> recordIds = jsonContext.read(basePath + "['control']['sourcerecordid'][*]");
-            List<String> authors = jsonContext.read(basePath + "['display']['lds07'][*]");
-            List<String> titles = jsonContext.read(basePath + "['display']['title'][*]");
-            List<String> editions = jsonContext.read(basePath + "['display']['edition'][*]");
-            List<String> years = jsonContext.read(basePath + "['display']['creationdate'][*]");
-            for (int i = 0; i < sourcetypes.size(); i++) {
+            List<String> documents = jsonContext.read("$['docs'][*]");
+            for (String document : documents) {
+                DocumentContext documentContext = JsonPath.parse(document);
                 PrimoData primoData = new PrimoData();
-                primoData.setIsbn(sourceIds.get(i));
-                primoData.setRecordId(recordIds.get(i));
-                primoData.setType(sourcetypes.get(i));
-                primoData.setTitle(titles.get(i));
-                primoData.setAuthors(authors.get(i));
-                primoData.setEdition(editions.get(i));
-                primoData.setYear(years.get(i));
+                String isbns = documentContext.read("$['pnx']['display']['identifier'][*]");
+                if (isbns.contains("ISBN"))
+                    isbns = isbns.replace("ISBN", "");
+                if (isbns.contains("-"))
+                    isbns = isbns.replace("-","");
+                if (isbns.contains(";"))
+                    isbns = isbns.substring(0, isbns.indexOf(";"));
+                primoData.setIsbn(isbns.trim());
+                primoData.setRecordId(documentContext.read( "$[pnx]['control']['sourcerecordid'][*]"));
+                primoData.setType(documentContext.read("$['pnx']['delivery']['delcategory'][*]"));
+                primoData.setTitle(documentContext.read("$['pnx']['display']['title'][*]"));
+                try {
+                    primoData.setAuthors(documentContext.read("$['pnx']['display']['lds07'][*]"));
+                } catch (IndexOutOfBoundsException ioobe) {
+                    primoData.setAuthors("");
+                }
+                try {
+                    primoData.setEdition(documentContext.read("$['pnx']['display']['edition'][*]"));
+                } catch (IndexOutOfBoundsException ioobe) {
+                    primoData.setEdition("1");
+                }
+                try {
+                    primoData.setYear(documentContext.read("$['pnx']['display']['creationdate'][*]"));
+                } catch (IndexOutOfBoundsException ioobe) {
+                    primoData.setYear("0");
+                }
                 primoResponse.addIsbnRecordIdRelation(primoData);
             }
         }
         return primoResponse;
     }
+
     private String getResponseForJson(String identifier) {
         RestTemplate restTemplate = new RestTemplate();
         String query = "isbn,contains," + identifier;

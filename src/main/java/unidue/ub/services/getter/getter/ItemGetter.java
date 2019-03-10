@@ -21,7 +21,7 @@ public class ItemGetter {
 	private List<Item> items;
 
 	public List<Item> getItemsByDocNumber(String identifier) {
-		String getCurrentItems = "select z30_call_no, z30_rec_key, z30_price, z30_collection, z30_material, z30_sub_library, z30_item_status, z30_item_process_status, z30_update_date, z30_inventory_number_date, z30_note_opac from edu50.z30 where z30_rec_key like ?";
+		String getCurrentItems = "select z30_call_no, z30_rec_key, z30_price, z30_collection, z30_material, z30_sub_library, z30_item_status, z30_item_process_status, z30_update_date, z30_inventory_number_date, z30_note_opac, z30_barcode from edu50.z30 where z30_rec_key like ?";
 		items = new ArrayList<>();
 		items.addAll(retrieveItems(getCurrentItems, identifier));
 		String getDeletedItems = "select z30h_call_no, z30h_rec_key, z30h_price, z30h_collection, z30h_material, z30h_sub_library, z30h_item_status, z30h_item_process_status, z30h_inventory_number_date, z30h_h_date, z30h_update_date, z30h_h_reason_type from edu50.z30h where z30h_h_reason_type = 'DELETE' and z30h_rec_key like ?";
@@ -47,7 +47,7 @@ public class ItemGetter {
 
 	public List<Item> getItemsByShelfmark(String shelfmark) {
 		List<Item> items = new ArrayList<>();
-		String getCurrentItems = "select z30_call_no, z30_rec_key, z30_price, z30_collection, z30_material, z30_sub_library, z30_item_status, z30_item_process_status, z30_update_date, z30_inventory_number_date, z30_note_opac from edu50.z30 where z30_call_no like ?";
+		String getCurrentItems = "select z30_call_no, z30_rec_key, z30_price, z30_collection, z30_material, z30_sub_library, z30_item_status, z30_item_process_status, z30_update_date, z30_inventory_number_date, z30_note_opac, z30_barcode from edu50.z30 where z30_call_no like ?";
 		return retrieveItems(getCurrentItems, shelfmark);
 	}
 
