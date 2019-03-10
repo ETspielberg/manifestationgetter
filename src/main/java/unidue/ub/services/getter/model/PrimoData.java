@@ -18,6 +18,26 @@ public class PrimoData {
 
     private String format;
 
+    private String link;
+
+    private String linkThumbnail;
+
+    public String getLinkThumbnail() {
+        return linkThumbnail;
+    }
+
+    public void setLinkThumbnail(String linkThumbnail) {
+        this.linkThumbnail = linkThumbnail;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
     public String getFormat() {
         return format;
     }

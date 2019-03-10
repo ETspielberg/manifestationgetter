@@ -33,7 +33,13 @@ public class MonographsController {
     String ignoredCollections;
 
     @Value("${libintel.primo.search.url}")
+    String primoApiUrl;
+
+    @Value("${libintel.primo.url}")
     String primoUrl;
+
+    @Value("${libintel.primo.vid}")
+    String primoVid;
 
     @Value("${libintel.primo.api.key}")
     String primoApiKey;
@@ -258,7 +264,7 @@ public class MonographsController {
 
     @GetMapping("getPrimoResponse/{identifier}")
     public ResponseEntity<?> getIdentifiers(@PathVariable("identifier") String identifier) {
-        PrimoGetter primoGetter = new PrimoGetter(primoUrl, primoApiKey);
+        PrimoGetter primoGetter = new PrimoGetter(primoApiUrl, primoApiKey, primoUrl);
         return ResponseEntity.ok(primoGetter.getPrimoResponse(identifier));
     }
 }

@@ -12,13 +12,16 @@ import java.util.List;
 
 public class PrimoGetter {
 
-    private final String primoUrl;
+    private final String primoApiUrl;
 
     private final String primoApiKey;
 
-    public PrimoGetter(String primoUrl, String primoApiKey) {
-        this.primoUrl = primoUrl;
+    private final String primoUrl;
+
+    public PrimoGetter(String primoApiUrl, String primoApiKey, String primoUrl) {
+        this.primoApiUrl = primoApiUrl;
         this.primoApiKey = primoApiKey;
+        this.primoUrl = primoUrl;
     }
 
     public PrimoResponse getPrimoResponse(String identifier) {
@@ -41,6 +44,7 @@ public class PrimoGetter {
                 primoData.setRecordId(documentContext.read( "$[pnx]['control']['sourcerecordid'][*]"));
                 primoData.setType(documentContext.read("$['pnx']['delivery']['delcategory'][*]"));
                 primoData.setTitle(documentContext.read("$['pnx']['display']['title'][*]"));
+                primoData.setLink(getPrimoLink(documentContext.read("$['pnx']['search']['recordid'][*]")));
                 try {
                     primoData.setAuthors(documentContext.read("$['pnx']['display']['lds07'][*]"));
                 } catch (IndexOutOfBoundsException ioobe) {
@@ -56,6 +60,14 @@ public class PrimoGetter {
                 } catch (IndexOutOfBoundsException ioobe) {
                     primoData.setYear("0");
                 }
+                List<String> linkObjects = documentContext.read("$['delivery']['link'][*]");
+                for (String linkObject : linkObjects) {
+                    DocumentContext linkContext = JsonPath.parse(linkObject);
+                    String type = linkContext.read("$['displayLabel");
+                    if ("thumbnail".equals(type))
+                        primoData.setLinkThumbnail(linkContext.read("$['linkURL']"));
+
+                }
                 primoResponse.addIsbnRecordIdRelation(primoData);
             }
         }
@@ -66,11 +78,15 @@ public class PrimoGetter {
         RestTemplate restTemplate = new RestTemplate();
         String query = "isbn,contains," + identifier;
         String resourceUrl
-                = primoUrl + "&q=" + query + "&apikey=" + primoApiKey;
+                = primoApiUrl + "&q=" + query + "&apikey=" + primoApiKey;
         ResponseEntity<String> response = restTemplate.getForEntity(resourceUrl, String.class);
         if (response.getStatusCode().equals(HttpStatus.OK))
             return response.getBody();
         else
             return "";
+    }
+
+    private String getPrimoLink(String identifier) {
+        return primoUrl + "&docid=" + identifier;
     }
 }
