@@ -9,7 +9,7 @@ public class PrimoResponse {
 
     private List<PrimoData> print = new ArrayList<>();
 
-    public void addIsbnRecordIdRelation(PrimoData primoData) {
+    public void addPrimoData(PrimoData primoData) {
         if ("Online Resource".equals(primoData.getType()))
             this.electronic.add(primoData);
         else if ("Physical Item".equals(primoData.getType()))

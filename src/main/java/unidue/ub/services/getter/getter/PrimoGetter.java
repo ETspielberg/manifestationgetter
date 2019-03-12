@@ -2,6 +2,7 @@ package unidue.ub.services.getter.getter;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -9,6 +10,7 @@ import unidue.ub.services.getter.model.PrimoData;
 import unidue.ub.services.getter.model.PrimoResponse;
 
 import java.util.List;
+import java.util.Map;
 
 public class PrimoGetter {
 
@@ -29,11 +31,12 @@ public class PrimoGetter {
         String response = getResponseForJson(identifier);
         if (!"".equals(response)) {
             DocumentContext jsonContext = JsonPath.parse(response);
-            List<String> documents = jsonContext.read("$['docs'][*]");
-            for (String document : documents) {
-                DocumentContext documentContext = JsonPath.parse(document);
+            List<Map<String, Object>> documents = jsonContext.read("$['docs']");
+            int numberOfDocs = documents.size();
+            for (int i = 0; i < numberOfDocs; i++) {
                 PrimoData primoData = new PrimoData();
-                String isbns = documentContext.read("$['pnx']['display']['identifier'][*]");
+                String basePath = "$['docs'][" + i + "]";
+                String isbns = jsonContext.read(basePath + "['pnx']['display']['identifier'][0]");
                 if (isbns.contains("ISBN"))
                     isbns = isbns.replace("ISBN", "");
                 if (isbns.contains("-"))
@@ -41,37 +44,43 @@ public class PrimoGetter {
                 if (isbns.contains(";"))
                     isbns = isbns.substring(0, isbns.indexOf(";"));
                 primoData.setIsbn(isbns.trim());
-                primoData.setRecordId(documentContext.read( "$[pnx]['control']['sourcerecordid'][*]"));
-                primoData.setType(documentContext.read("$['pnx']['delivery']['delcategory'][*]"));
-                primoData.setTitle(documentContext.read("$['pnx']['display']['title'][*]"));
-                primoData.setLink(getPrimoLink(documentContext.read("$['pnx']['search']['recordid'][*]")));
+                primoData.setRecordId(jsonContext.read(basePath + "['pnx']['control']['sourcerecordid'][0]"));
+                primoData.setType(jsonContext.read(basePath + "['pnx']['delivery']['delcategory'][0]"));
+                primoData.setTitle(jsonContext.read(basePath + "['pnx']['display']['title'][0]"));
                 try {
-                    primoData.setAuthors(documentContext.read("$['pnx']['display']['lds07'][*]"));
-                } catch (IndexOutOfBoundsException ioobe) {
+                    primoData.setShelfmarks(jsonContext.read(basePath + "['pnx']['display']['lds48'][0]"));
+                } catch (PathNotFoundException pnfe) {
+                    primoData.setShelfmarks("");
+                }
+                primoData.setLink(getPrimoLink(jsonContext.read(basePath + "['pnx']['search']['recordid'][0]")));
+                try {
+                    primoData.setAuthors(jsonContext.read(basePath + "['pnx']['display']['lds07'][0]"));
+                } catch (PathNotFoundException pnfe) {
                     primoData.setAuthors("");
                 }
                 try {
-                    primoData.setEdition(documentContext.read("$['pnx']['display']['edition'][*]"));
-                } catch (IndexOutOfBoundsException ioobe) {
+                    primoData.setEdition(jsonContext.read(basePath + "['pnx']['display']['edition'][0]"));
+                } catch (PathNotFoundException pnfe) {
                     primoData.setEdition("1");
                 }
                 try {
-                    primoData.setYear(documentContext.read("$['pnx']['display']['creationdate'][*]"));
-                } catch (IndexOutOfBoundsException ioobe) {
+                    primoData.setYear(jsonContext.read(basePath + "['pnx']['display']['creationdate'][0]"));
+                } catch (PathNotFoundException pnfe) {
                     primoData.setYear("0");
                 }
-                List<String> linkObjects = documentContext.read("$['delivery']['link'][*]");
-                for (String linkObject : linkObjects) {
-                    DocumentContext linkContext = JsonPath.parse(linkObject);
-                    String type = linkContext.read("$['displayLabel");
+                List<Map<String, Object>> linkObjects = jsonContext.read(basePath + "['delivery']['link'][*]");
+                for (int j = 0; j < linkObjects.size(); j++) {
+                    String linkBasePath = basePath +  "['delivery']['link'][" + j + "]";
+                    String type = jsonContext.read(linkBasePath + "['displayLabel']");
                     if ("thumbnail".equals(type))
-                        primoData.setLinkThumbnail(linkContext.read("$['linkURL']"));
+                        primoData.setLinkThumbnail(jsonContext.read(linkBasePath + "['linkURL']"));
                     if ("$$Elinktorsrc".equals(type))
-                        primoData.setFuiltextLink(linkContext.read("$['linkURL']"));
+                        primoData.setFulltextLink(jsonContext.read(linkBasePath + "['linkURL']"));
                 }
-                primoResponse.addIsbnRecordIdRelation(primoData);
+                primoResponse.addPrimoData(primoData);
             }
         }
+
         return primoResponse;
     }
 

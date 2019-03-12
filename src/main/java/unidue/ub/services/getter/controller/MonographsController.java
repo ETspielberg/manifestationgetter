@@ -38,9 +38,6 @@ public class MonographsController {
     @Value("${libintel.primo.url}")
     String primoUrl;
 
-    @Value("${libintel.primo.vid}")
-    String primoVid;
-
     @Value("${libintel.primo.api.key}")
     String primoApiKey;
 

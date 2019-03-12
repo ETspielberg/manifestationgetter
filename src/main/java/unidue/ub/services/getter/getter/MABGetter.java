@@ -79,6 +79,7 @@ public class MABGetter {
 			bibliographicInformation = buildBibligraphicInformationFromMABXML(mabXML);
 		}
 		bibliographicInformation.setTitleId(identifier);
+		bibliographicInformation.setRecKey(recKeys.get(0));
 		bibliographicInformation.setType("simple");
 		return bibliographicInformation;
 	}

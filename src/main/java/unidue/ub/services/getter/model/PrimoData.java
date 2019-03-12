@@ -2,34 +2,44 @@ package unidue.ub.services.getter.model;
 
 public class PrimoData {
 
-    private String recordId;
+    private String recordId = "";
 
-    private String isbn;
+    private String isbn = "";
 
-    private String type;
+    private String type = "";
 
-    private String title;
+    private String title = "";
 
-    private String authors;
+    private String authors = "";
 
-    private String edition;
+    private String edition = "";
 
     private String year;
 
-    private String format;
+    private String format = "";
 
-    private String link;
+    private String link = "";
 
-    private String linkThumbnail;
+    private String linkThumbnail = "";
 
-    private String fuiltextLink;
+    private String fulltextLink = "";
 
-    public String getFuiltextLink() {
-        return fuiltextLink;
+    private String shelfmarks = "";
+
+    public String getFulltextLink() {
+        return fulltextLink;
     }
 
-    public void setFuiltextLink(String fuiltextLink) {
-        this.fuiltextLink = fuiltextLink;
+    public String getShelfmarks() {
+        return shelfmarks;
+    }
+
+    public void setShelfmarks(String shelfmarks) {
+        this.shelfmarks = shelfmarks;
+    }
+
+    public void setFulltextLink(String fulltextLink) {
+        this.fulltextLink = fulltextLink;
     }
 
     public String getLinkThumbnail() {
