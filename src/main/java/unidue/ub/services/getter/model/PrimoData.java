@@ -10,6 +10,8 @@ public class PrimoData {
 
     private String title = "";
 
+    private String doi = "";
+
     private String authors = "";
 
     private String edition = "";
@@ -32,6 +34,14 @@ public class PrimoData {
 
     public String getShelfmarks() {
         return shelfmarks;
+    }
+
+    public String getDoi() {
+        return doi;
+    }
+
+    public void setDoi(String doi) {
+        this.doi = doi;
     }
 
     public void setShelfmarks(String shelfmarks) {
