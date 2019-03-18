@@ -44,8 +44,8 @@ public class PrimoGetter {
                     String test = jsonContext.read(basePath + "['pnx']['links']['lln15'][0]");
                     log.info(test);
                     String frbrGroupId = jsonContext.read(basePath + "['pnx']['facets']['frbrgroupid'][0]");
-                    String frbrRPrimoResponse = getResponseForJson(identifier,frbrGroupId);
-                    DocumentContext frbrContext = JsonPath.parse(frbrRPrimoResponse);
+                    String frbrPrimoResponse = getResponseForJson(identifier,frbrGroupId);
+                    DocumentContext frbrContext = JsonPath.parse(frbrPrimoResponse);
                     List<Object> frbrDocuments = frbrContext.read("$['docs'][*]");
                     log.info("found " + frbrDocuments.size() + " documents");
                     for (int k = 0; k < frbrDocuments.size(); k++) {
@@ -68,7 +68,8 @@ public class PrimoGetter {
     private String getResponseForJson(String identifier, String frbrGroupId) {
         String frbrSearch = "";
         if (!frbrGroupId.isEmpty())
-            frbrSearch = "facet_frbrgroupid,exact," + frbrGroupId;
+            if (! "-1".equals(frbrGroupId))
+                frbrSearch = "facet_frbrgroupid,exact," + frbrGroupId;
         RestTemplate restTemplate = new RestTemplate();
         String query = "isbn,contains," + identifier;
         String resourceUrl
