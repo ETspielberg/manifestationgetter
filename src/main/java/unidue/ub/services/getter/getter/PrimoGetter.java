@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import unidue.ub.services.getter.model.PrimoData;
 import unidue.ub.services.getter.model.PrimoResponse;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -71,6 +73,8 @@ public class PrimoGetter {
             if (! "-1".equals(frbrGroupId))
                 frbrSearch = "facet_frbrgroupid,exact," + frbrGroupId;
         RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters()
+                .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
         String query = "isbn,contains," + identifier;
         String resourceUrl
                 = primoApiUrl + "&q=" + query + "&qInclude=" + frbrSearch + "&apikey=" + primoApiKey;
