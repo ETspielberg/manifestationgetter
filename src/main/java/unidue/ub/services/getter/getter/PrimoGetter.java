@@ -38,11 +38,6 @@ public class PrimoGetter {
         String response = getResponseForJson(identifier, "", limit);
         if (!"".equals(response)) {
             DocumentContext jsonContext = JsonPath.parse(response);
-            int numberOfResults = jsonContext.read("$['info']['total']");
-            if (numberOfResults > limit) {
-                String secondResponse = getResponseForJson(identifier, "", numberOfResults);
-                jsonContext = JsonPath.parse(secondResponse);
-            }
             List<Object> documents = jsonContext.read("$['docs'][*]");
             log.info("found " + documents.size() + " documents");
             int numberOfDocs = documents.size();
