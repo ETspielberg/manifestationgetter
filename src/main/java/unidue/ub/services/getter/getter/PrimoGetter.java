@@ -34,9 +34,15 @@ public class PrimoGetter {
 
     public PrimoResponse getPrimoResponse(String identifier) {
         PrimoResponse primoResponse = new PrimoResponse();
-        String response = getResponseForJson(identifier, "");
+        int limit = 25;
+        String response = getResponseForJson(identifier, "", limit);
         if (!"".equals(response)) {
             DocumentContext jsonContext = JsonPath.parse(response);
+            int numberOfResults = jsonContext.read("$['info']['total']");
+            if (numberOfResults > limit) {
+                String secondResponse = getResponseForJson(identifier, "", numberOfResults);
+                jsonContext = JsonPath.parse(secondResponse);
+            }
             List<Object> documents = jsonContext.read("$['docs'][*]");
             log.info("found " + documents.size() + " documents");
             int numberOfDocs = documents.size();
@@ -46,7 +52,7 @@ public class PrimoGetter {
                     String test = jsonContext.read(basePath + "['pnx']['links']['lln15'][0]");
                     log.info(test);
                     String frbrGroupId = jsonContext.read(basePath + "['pnx']['facets']['frbrgroupid'][0]");
-                    String frbrPrimoResponse = getResponseForJson(identifier,frbrGroupId);
+                    String frbrPrimoResponse = getResponseForJson(identifier,frbrGroupId, limit);
                     DocumentContext frbrContext = JsonPath.parse(frbrPrimoResponse);
                     List<Object> frbrDocuments = frbrContext.read("$['docs'][*]");
                     log.info("found " + frbrDocuments.size() + " documents");
@@ -67,7 +73,7 @@ public class PrimoGetter {
         return primoResponse;
     }
 
-    private String getResponseForJson(String identifier, String frbrGroupId) {
+    private String getResponseForJson(String identifier, String frbrGroupId, int limit) {
         String frbrSearch = "";
         if (!frbrGroupId.isEmpty())
             if (! "-1".equals(frbrGroupId))
@@ -77,7 +83,7 @@ public class PrimoGetter {
                 .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
         String query = "isbn,contains," + identifier;
         String resourceUrl
-                = primoApiUrl + "&q=" + query + "&qInclude=" + frbrSearch + "&apikey=" + primoApiKey;
+                = primoApiUrl + "&q=" + query + "&qInclude=" + frbrSearch + "&limit=" + limit + "&apikey=" + primoApiKey;
         log.info("querying Primo API with " + resourceUrl);
         ResponseEntity<String> response = restTemplate.getForEntity(resourceUrl, String.class);
         if (response.getStatusCode().equals(HttpStatus.OK))
