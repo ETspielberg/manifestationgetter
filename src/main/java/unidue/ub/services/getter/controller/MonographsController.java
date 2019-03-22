@@ -114,12 +114,11 @@ public class MonographsController {
 
         log.info(barcode);
 
-        if (barcode != null) {
-            if (!barcode.isEmpty())
+        if (barcode != null)
                 shelfmarks.addAll(manifestationGetter.getShelfmarkFromBarcode(identifier));
-        } else if (collection != null) {
+        else if (collection != null)
                 shelfmarks.addAll(manifestationGetter.getShelfmarksByCollection(identifier));
-        } else {
+        else {
             identifier = deleteItemIdentifier(identifier);
             log.info("reduced shelfmark: " + identifier);
             if (identifier.contains(";")) {
