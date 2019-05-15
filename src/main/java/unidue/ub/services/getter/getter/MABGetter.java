@@ -10,7 +10,6 @@ import org.jdom2.Namespace;
 import org.jdom2.Verifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import org.springframework.stereotype.Component;
 import unidue.ub.media.monographs.BibliographicInformation;
 import unidue.ub.media.monographs.Manifestation;
 import unidue.ub.services.getter.model.MabBlob;
@@ -23,7 +22,6 @@ import static unidue.ub.media.tools.MonographTools.buildBibligraphicInformationF
  * @author Frank L\u00FCtzenkirchen, Eike Spielberg
  * @version 1
  */
-@Component
 public class MABGetter {
 
 	private JdbcTemplate jdbcTemplate;

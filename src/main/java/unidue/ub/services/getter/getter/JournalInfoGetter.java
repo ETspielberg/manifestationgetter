@@ -1,20 +1,14 @@
 package unidue.ub.services.getter.getter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import unidue.ub.services.getter.model.RawJournalInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class JournalInfoGetter {
 
     private JdbcTemplate jdbcTemplate;
-
-    private final static Logger log = LoggerFactory.getLogger(JournalInfoGetter.class);
 
     private final String getJournalInfo = "select z13_title, z13_author, z13_isbn_issn, z13_imprint from edu50.z103, edu01.z13 where  z103_lkr_library = 'EDU50' and substr(?,1,9) = substr(z103_rec_key,6,9) and substr(z103_rec_key_1,6,9) = z13_rec_key";
 

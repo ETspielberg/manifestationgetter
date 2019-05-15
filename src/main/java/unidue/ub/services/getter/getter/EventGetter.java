@@ -34,10 +34,9 @@ public class EventGetter {
     }
 
     public List<Event> getLoansByDocNumber(String identifier) {
-        List<RawLoanEvent> rawClosedLoanEvents = new ArrayList<>();
         List<RawLoanEvent> rawOpenLoanEvents = new ArrayList<>();
         List<Event> events = new ArrayList<>();
-        rawClosedLoanEvents.addAll(jdbcTemplate.query(getClosedLoans, new Object[]{identifier + "%"},
+        List<RawLoanEvent> rawClosedLoanEvents = new ArrayList<>(jdbcTemplate.query(getClosedLoans, new Object[]{identifier + "%"},
                 (rs, rowNum) -> new RawLoanEvent(rs.getString("z36h_rec_key"), rs.getString("z36h_sub_library"),
                         rs.getString("z36h_bor_status"), rs.getString("z36h_material"), rs.getString("z36h_loan_date"),
                         rs.getString("z36h_loan_hour"), rs.getString("z36h_returned_date"),

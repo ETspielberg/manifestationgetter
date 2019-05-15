@@ -41,28 +41,29 @@ public class MonographsController {
     @Value("${libintel.primo.api.key}")
     String primoApiKey;
 
-    private final ManifestationGetter manifestationGetter;
-    private final EventGetter eventGetter;
-    private final ItemGetter itemGetter;
-    private final MABGetter mabGetter;
+    private final ManifestationGetterFactory manifestationGetterFactory;
+    private final EventGetterFactory eventGetterFactory;
+    private final ItemGetterFactory itemGetterFactory;
+    private final MABGetterFactory mabGetterFactory;
 
     @Autowired
-    public MonographsController(ManifestationGetter manifestationGetter,
-                                EventGetter eventGetter,
-                                ItemGetter itemGetter,
-                                MABGetter mabGetter) {
-        this.manifestationGetter = manifestationGetter;
-        this.eventGetter = eventGetter;
-        this.itemGetter = itemGetter;
-        this.mabGetter = mabGetter;
+    public MonographsController(ManifestationGetterFactory manifestationGetterFactory,
+                                EventGetterFactory eventGetterFactory,
+                                ItemGetterFactory itemGetterFactory,
+                                MABGetterFactory mabGetterFactory) {
+        this.manifestationGetterFactory = manifestationGetterFactory;
+        this.eventGetterFactory = eventGetterFactory;
+        this.itemGetterFactory = itemGetterFactory;
+        this.mabGetterFactory = mabGetterFactory;
     }
 
     @GetMapping("/manifestations")
     public ResponseEntity<?> getManifestations(@RequestParam("identifier") String identifier, @RequestParam("exact") String exact,
                                                @RequestParam("mode") String mode) {
+        ManifestationGetter manifestationGetter = manifestationGetterFactory.getObject();
         manifestationGetter.setShelfmarkRegex(shelfmarkRegex);
         List<Manifestation> manifestations = new ArrayList<>();
-        Boolean exactBoolean = "true".equals(exact);
+        boolean exactBoolean = "true".equals(exact);
         switch (mode) {
             case "shelfmark": {
                 manifestations = manifestationGetter.getDocumentsByShelfmark(identifier, exactBoolean);
@@ -89,6 +90,11 @@ public class MonographsController {
                 log.info("retrieving manifestations by barcode " + identifier.toUpperCase());
                 break;
             }
+            case "collection": {
+                manifestations = manifestationGetter.getManifestationsByCollection(identifier);
+                log.info("retrieving manifestations by collection " + identifier.toUpperCase());
+                break;
+            }
         }
         return ResponseEntity.ok(manifestations);
     }
@@ -99,20 +105,19 @@ public class MonographsController {
                                                   @RequestParam(value = "collection", required = false) String collection,
                                                   @RequestParam(value = "barcode", required = false) String barcode) {
 
+        ManifestationGetter manifestationGetter = manifestationGetterFactory.getObject();
         shelfmarks = new HashSet<>();
         Set<String> shelfmarksQueried = new HashSet<>();
         Set<Manifestation> manifestations = new HashSet<>();
         Set<String> manifestationsQueried = new HashSet<>();
         log.info("queried identifier: " + identifier);
 
-        Boolean exactBoolean = "true".equals(exact);
+        boolean exactBoolean = "true".equals(exact);
         boolean shelfmarkNew;
 
         manifestationGetter.setShelfmarkRegex(shelfmarkRegex);
 
         Pattern pattern = Pattern.compile(shelfmarkRegex);
-
-        log.info(barcode);
 
         if (barcode != null)
                 shelfmarks.addAll(manifestationGetter.getShelfmarkFromBarcode(identifier));
@@ -130,7 +135,6 @@ public class MonographsController {
             } else
                 shelfmarks.add(identifier.trim());
         }
-        log.info(shelfmarks.toString());
         do {
             for (String shelfmark : shelfmarks) {
                 log.info("collecting shelfmark " + shelfmark);
@@ -147,8 +151,7 @@ public class MonographsController {
                         continue;
                     extendManifestation(foundManifestation, false);
                     manifestations.add(foundManifestation);
-                    if (!manifestationsQueried.contains(foundManifestation.getTitleID()))
-                        manifestationsQueried.add(foundManifestation.getTitleID());
+                    manifestationsQueried.add(foundManifestation.getTitleID());
                 }
             }
             shelfmarkNew = false;
@@ -202,6 +205,7 @@ public class MonographsController {
     public ResponseEntity<?> getItemList(@RequestParam("identifier") String identifier,
                                          @RequestParam(value = "collections", required = false) String collections,
                                          @RequestParam(value = "mode", required = false) String mode) {
+        ItemGetter itemGetter = itemGetterFactory.getObject();
         List<Item> items = new ArrayList<>();
         switch (mode) {
             case "barcode": {
@@ -238,6 +242,9 @@ public class MonographsController {
     }
 
     private void extendManifestation(Manifestation manifestation, Boolean active) {
+        EventGetter eventGetter = eventGetterFactory.getObject();
+        ItemGetter itemGetter = itemGetterFactory.getObject();
+        MABGetter mabGetter = mabGetterFactory.getObject();
         Set<String> itemIds = new HashSet<>();
         List<Item> items = itemGetter.getItemsByDocNumber(manifestation.getTitleID());
         for (Item item : items) {

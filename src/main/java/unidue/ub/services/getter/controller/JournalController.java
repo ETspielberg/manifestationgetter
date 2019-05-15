@@ -7,9 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import unidue.ub.media.contracts.Contract;
-import unidue.ub.services.getter.getter.InvoiceGetter;
-import unidue.ub.services.getter.getter.JournalInfoGetter;
-import unidue.ub.services.getter.getter.OrderGetter;
+import unidue.ub.services.getter.getter.*;
 import unidue.ub.services.getter.model.RawContract;
 import unidue.ub.services.getter.model.RawInvoice;
 import unidue.ub.services.getter.model.RawOrder;
@@ -21,44 +19,40 @@ import java.util.List;
 @Controller
 public class JournalController {
 
-    private final InvoiceGetter invoiceGetter;
+    private final InvoiceGetterFactory invoiceGetterFactory;
 
-    private final OrderGetter orderGetter;
+    private final OrderGetterFactory orderGetterFactory;
 
-    private final JournalInfoGetter journalInfoGetter;
+    private final JournalInfoGetterFactory journalInfoGetterFactory;
 
     private final static Logger log = LoggerFactory.getLogger(JournalController.class);
 
-    public JournalController(InvoiceGetter invoiceGetter, OrderGetter orderGetter, JournalInfoGetter journalInfoGetter) {
-        this.invoiceGetter = invoiceGetter;
-        this.orderGetter = orderGetter;
-        this.journalInfoGetter = journalInfoGetter;
+    public JournalController(InvoiceGetterFactory invoiceGetterFactory, OrderGetterFactory orderGetterFactory, JournalInfoGetterFactory journalInfoGetterFactory) {
+        this.invoiceGetterFactory = invoiceGetterFactory;
+        this.orderGetterFactory = orderGetterFactory;
+        this.journalInfoGetterFactory = journalInfoGetterFactory;
     }
 
 
     @GetMapping("journalcontract/{orderNumber}")
     public ResponseEntity<?> getOrdersForOrderNumber(@PathVariable String orderNumber) {
         log.info("retrieving orders and invoices for order number " + orderNumber);
-        List<Contract> contracts = new ArrayList<>();
+        OrderGetter orderGetter = orderGetterFactory.getObject();
         List<RawOrder> orders = orderGetter.findOrdersByOrderNumber(orderNumber);
-        log.info(String.valueOf(orders.size()) +  " orders found");
-        List<RawContract> rawContracts = buildRawContracs(orders);
-        rawContracts.forEach(entry -> contracts.add(entry.getContract()));
-        return ResponseEntity.ok(contracts);
+        return ResponseEntity.ok(extendToContracts(orders));
     }
 
     @GetMapping("journalcontractByIssn/{issn}")
     public ResponseEntity<?> getOrdersForIssn(@PathVariable String issn) {
         log.info("retrieving orders and invoices for ISSN " + issn);
-        List<Contract> contracts = new ArrayList<>();
+        OrderGetter orderGetter = orderGetterFactory.getObject();
         List<RawOrder> orders = orderGetter.findOrdersByIssn(issn);
-        log.info(String.valueOf(orders.size()) +  " orders found");
-        List<RawContract> rawContracts = buildRawContracs(orders);
-        rawContracts.forEach(entry -> contracts.add(entry.getContract()));
-        return ResponseEntity.ok(contracts);
+        return ResponseEntity.ok(extendToContracts(orders));
     }
 
     private List<RawContract> buildRawContracs(List<RawOrder> rawOrders) {
+        InvoiceGetter invoiceGetter = invoiceGetterFactory.getObject();
+        JournalInfoGetter journalInfoGetter = journalInfoGetterFactory.getObject();
         List<RawContract> rawContracts = new ArrayList<>();
         for (RawOrder order : rawOrders) {
             String internalId = order.getInternalId();
@@ -72,12 +66,21 @@ public class JournalController {
         return rawContracts;
     }
 
+    private List<Contract> extendToContracts(List<RawOrder> orders) {
+        List<Contract> contracts = new ArrayList<>();
+        log.info("extending " + orders.size() +  " orders");
+        List<RawContract> rawContracts = buildRawContracs(orders);
+        rawContracts.forEach(entry -> contracts.add(entry.getContract()));
+        return contracts;
+    }
+
     @GetMapping("journalcontract/all")
     public ResponseEntity<?> getAllContracts() {
+        OrderGetter orderGetter = orderGetterFactory.getObject();
         log.info("retrieving all orders and invoices");
         List<Contract> contracts = new ArrayList<>();
         List<RawOrder> orders = orderGetter.getAllOrders();
-        log.info(String.valueOf(orders.size()) +  " orders found");
+        log.info(orders.size() +  " orders found");
         List<RawContract> rawContracts = buildRawContracs(orders);
         rawContracts.forEach(entry -> contracts.add(entry.getContract()));
         return ResponseEntity.ok(contracts);

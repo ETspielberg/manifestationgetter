@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.services.getter.model.RawDeletedItem;
 
-@Component
 public class ItemGetter {
 	
 	private JdbcTemplate jdbcTemplate;
@@ -71,21 +70,20 @@ public class ItemGetter {
 	}
 
 	private List<Item> retrieveItems(String query, String identifier){
-			List<Item> items = new ArrayList<>();
-			items.addAll(jdbcTemplate.query(query, new Object[]{identifier + "%"},(rs, rowNum) ->
-					new Item(rs.getString("z30_rec_key"),
-							rs.getString("z30_collection"),
-							rs.getString("z30_call_no"),
-							rs.getString("z30_sub_library"),
-							rs.getString("z30_material"),
-							rs.getString("z30_item_status"),
-							rs.getString("z30_item_process_status"),
-							rs.getString("z30_inventory_number_date"),
-							rs.getString("z30_update_date"),
-							rs.getString("z30_price"),
-							rs.getString("z30_note_opac"),
-							rs.getString("z30_barcode")
-					)));
+		List<Item> items = new ArrayList<>(jdbcTemplate.query(query, new Object[]{identifier + "%"}, (rs, rowNum) ->
+				new Item(rs.getString("z30_rec_key"),
+						rs.getString("z30_collection"),
+						rs.getString("z30_call_no"),
+						rs.getString("z30_sub_library"),
+						rs.getString("z30_material"),
+						rs.getString("z30_item_status"),
+						rs.getString("z30_item_process_status"),
+						rs.getString("z30_inventory_number_date"),
+						rs.getString("z30_update_date"),
+						rs.getString("z30_price"),
+						rs.getString("z30_note_opac"),
+						rs.getString("z30_barcode")
+				)));
 			for (Item item : items) {
 				if (!(item.getItemStatus().equals("89") || item.getItemStatus().equals("90") || item.getItemStatus().equals("xx"))) {
 					item.setDeletionDate("");
@@ -97,7 +95,7 @@ public class ItemGetter {
 		}
 
 		private List<RawDeletedItem> retrieveRawDeletedItems(String query, String identifier) {
-			List<RawDeletedItem> rawDeletedItems = jdbcTemplate.query(query, new Object[]{identifier + "%"}, (rs, rowNum) ->
+			return jdbcTemplate.query(query, new Object[]{identifier + "%"}, (rs, rowNum) ->
 					new RawDeletedItem(rs.getString("z30h_rec_key"),
 							rs.getString("z30h_collection"),
 							rs.getString("z30h_call_no"),
@@ -110,7 +108,6 @@ public class ItemGetter {
 							rs.getString("z30h_h_date"),
 							rs.getString("z30h_price")
 					));
-			return rawDeletedItems;
 		}
 
 	private void cleanUpFields() {

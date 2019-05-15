@@ -1,13 +1,11 @@
 package unidue.ub.services.getter.getter;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import unidue.ub.services.getter.model.RawOrder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class OrderGetter {
 
     private JdbcTemplate jdbcTemplate;
