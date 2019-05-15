@@ -1,6 +1,6 @@
 package unidue.ub.services.getter.getter;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,6 +70,8 @@ public class MABGetter {
 		List<MabBlob> mabBlobs = new ArrayList<>();
 		List<String> recKeys = jdbcTemplate.query(sqlRecKey,
 				new Object[] { "EDU50" +identifier + "%" }, (rs, rowNum) -> rs.getString(1));
+		if (recKeys.size() == 0)
+			return bibliographicInformation;
 		for (String recKey : recKeys) {
 			mabBlobs = jdbcTemplate.query(sql, new Object[] { recKey },
 					(rs, rowNum) -> new MabBlob(rs.getBytes(1), rs.getInt(2)));
@@ -129,22 +131,14 @@ public class MABGetter {
 			byte[] tmp = new byte[4];
 			System.arraycopy(blob, offset, tmp, 0, 4);
 			String slen;
-			try {
-				slen = new String(tmp, "UTF8");
-			} catch (UnsupportedEncodingException e) {
-				slen = "";
-			}
+			slen = new String(tmp, StandardCharsets.UTF_8);
 			int len = Integer.parseInt(slen);
 			offset += 4;
 
 			tmp = new byte[len];
 			System.arraycopy(blob, offset, tmp, 0, len);
 			String field;
-			try {
-				field = new String(tmp, "UTF8");
-			} catch (UnsupportedEncodingException e) {
-				field = "";
-			}
+			field = new String(tmp, StandardCharsets.UTF_8);
 			offset += len;
 
 			String fieldname = field.substring(0, 3);
