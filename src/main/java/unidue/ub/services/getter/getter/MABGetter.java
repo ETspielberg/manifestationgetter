@@ -63,7 +63,7 @@ public class MABGetter {
 		manifestation.setBibliographicInformation(bibliographicInformation);
 	}
 
-	private BibliographicInformation getSimpleMab(String identifier) {
+	public BibliographicInformation getSimpleMab(String identifier) {
 		BibliographicInformation bibliographicInformation = new BibliographicInformation();
 		List<MabBlob> mabBlobs = new ArrayList<>();
 		List<String> recKeys = jdbcTemplate.query(sqlRecKey,

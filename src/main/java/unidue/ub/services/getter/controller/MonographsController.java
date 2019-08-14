@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import unidue.ub.media.monographs.BibliographicInformation;
 import unidue.ub.media.monographs.Item;
 import unidue.ub.media.monographs.Manifestation;
 import unidue.ub.services.getter.Utilities;
@@ -201,10 +202,16 @@ public class MonographsController {
         return ResponseEntity.ok(manifestation);
     }
 
+    @GetMapping("getBibliographicInformation/{identifier}")
+    public ResponseEntity<BibliographicInformation> getBibliographicInformation(@PathVariable String identifier) {
+        MABGetter mabGetter = mabGetterFactory.getObject();
+        return ResponseEntity.ok(mabGetter.getSimpleMab(identifier));
+    }
+
     @GetMapping("getItemList")
     public ResponseEntity<?> getItemList(@RequestParam("identifier") String identifier,
-                                         @RequestParam(value = "collections", required = false) String collections,
-                                         @RequestParam(value = "mode", required = false) String mode) {
+                                         @RequestParam("mode") String mode,
+                                         @RequestParam(value = "collections", required = false) String collections) {
         ItemGetter itemGetter = itemGetterFactory.getObject();
         List<Item> items = new ArrayList<>();
         switch (mode) {
@@ -265,9 +272,15 @@ public class MonographsController {
         mabGetter.addSimpleMAB(manifestation);
     }
 
-    @GetMapping("getPrimoResponse/{identifier}")
-    public ResponseEntity<?> getIdentifiers(@PathVariable("identifier") String identifier) {
+    @GetMapping("getPrimoResponse/isbn/{identifier}")
+    public ResponseEntity<?> getIdentifiersForIsbn(@PathVariable("identifier") String identifier) {
         PrimoGetter primoGetter = new PrimoGetter(primoApiUrl, primoApiKey, primoUrl);
-        return ResponseEntity.ok(primoGetter.getPrimoResponse(identifier));
+        return ResponseEntity.ok(primoGetter.getPrimoResponse(identifier, "isbn"));
+    }
+
+    @GetMapping("getPrimoResponse/shelfmark/{identifier}")
+    public ResponseEntity<?> getIdentifiersForShelfmark(@PathVariable("identifier") String identifier) {
+        PrimoGetter primoGetter = new PrimoGetter(primoApiUrl, primoApiKey, primoUrl);
+        return ResponseEntity.ok(primoGetter.getPrimoResponse(identifier, "shelfmark"));
     }
 }

@@ -32,10 +32,10 @@ public class PrimoGetter {
         this.primoUrl = primoUrl;
     }
 
-    public PrimoResponse getPrimoResponse(String identifier) {
+    public PrimoResponse getPrimoResponse(String identifier, String type) {
         PrimoResponse primoResponse = new PrimoResponse();
         int limit = 25;
-        String response = getResponseForJson(identifier, "", limit);
+        String response = getResponseForJson(identifier, type, "", limit);
         if (!"".equals(response)) {
             DocumentContext jsonContext = JsonPath.parse(response);
             List<Object> documents = jsonContext.read("$['docs'][*]");
@@ -47,7 +47,7 @@ public class PrimoGetter {
                     String test = jsonContext.read(basePath + "['pnx']['links']['lln15'][0]");
                     log.info(test);
                     String frbrGroupId = jsonContext.read(basePath + "['pnx']['facets']['frbrgroupid'][0]");
-                    String frbrPrimoResponse = getResponseForJson(identifier,frbrGroupId, limit);
+                    String frbrPrimoResponse = getResponseForJson(identifier, type, frbrGroupId, limit);
                     DocumentContext frbrContext = JsonPath.parse(frbrPrimoResponse);
                     List<Object> frbrDocuments = frbrContext.read("$['docs'][*]");
                     log.info("found " + frbrDocuments.size() + " documents");
@@ -68,7 +68,7 @@ public class PrimoGetter {
         return primoResponse;
     }
 
-    private String getResponseForJson(String identifier, String frbrGroupId, int limit) {
+    private String getResponseForJson(String identifier, String type, String frbrGroupId, int limit) {
         String frbrSearch = "";
         if (!frbrGroupId.isEmpty())
             if (! "-1".equals(frbrGroupId))
@@ -76,7 +76,16 @@ public class PrimoGetter {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters()
                 .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-        String query = "isbn,contains," + identifier;
+        String query = "";
+        switch (type) {
+            case "isbn" : {
+                query = "isbn,contains," + identifier;
+                break;
+            }
+            case "shelfmark": {
+                query = "lsr11,contains," + identifier;
+            }
+        }
         String resourceUrl
                 = primoApiUrl + "&q=" + query + "&qInclude=" + frbrSearch + "&limit=" + limit + "&apikey=" + primoApiKey;
         log.info("querying Primo API with " + resourceUrl);
